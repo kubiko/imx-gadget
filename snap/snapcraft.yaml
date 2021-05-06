@@ -14,6 +14,21 @@ architectures:
 confinement: strict
 grade: stable
 
+environment:
+    LD_LIBRARY_PATH: ${SNAP}/usr/lib
+    PATH: ${SNAP}/bin:${PATH}
+    OPTEE_LIB: $SNAP/lib/optee_armtz
+    OPTEE_FS_PARENT_PATH: $SNAP_COMMON
+
+apps:
+    tee-supplicant:
+        adapter: none
+        command: usr/sbin/tee-supplicant
+        daemon: simple
+        plugs:
+            - tee
+            - network-bind
+
 parts:
     arm-trusted-firmware:
         plugin: nil
@@ -78,8 +93,8 @@ parts:
             # add optee-fde TA
             cp -r ${SNAPCRAFT_STAGE}/optee-fde/ta/fde_key_handler ${SNAPCRAFT_PART_BUILD}/ta/
             # determine keys to be used
-            TA_PUBLIC_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_public.pem"
-            TA_SIGN_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_private.pem"
+            export TA_PUBLIC_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_public.pem"
+            export TA_SIGN_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_private.pem"
             make O=${SNAPCRAFT_PART_BUILD}/out -j$(nproc)
             make O=${SNAPCRAFT_PART_BUILD}/out -j$(nproc) \
                  CFG_EARLY_TA=y \
