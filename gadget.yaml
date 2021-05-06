@@ -1,0 +1,41 @@
+device-tree-origin: kernel
+volumes:
+  emmc:
+    schema: gpt
+    bootloader: u-boot
+    structure:
+      - offset: 33792  # 0x8400 bytes (66 sectors)
+        size: 10451456 # 0x9F7C00 bytes (20414)
+        type: bare
+        content:
+            - image: blobs/imx-boot.bin
+      - name: ubuntu-seed
+        offset: 10485760 # 0xa00000 bytes (20480)
+        role: system-seed
+        filesystem: ext4
+        type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
+        size: 500M
+      - name: ubuntu-boot
+        offset: 534773760 # 0xa00000 + ubuntu-seed(0x1F400000) = 0x1FE00000
+        role: system-boot
+        filesystem: vfat
+        type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
+        # type: C12A7328-F81F-11D2-BA4B-00A0C93EC93B
+        size: 200M
+        content:
+          # TODO:UC20: install the boot.sel via snapd instead of via the gadget
+          - source: boot.sel
+            target: uboot/ubuntu/boot.sel
+      - name: ubuntu-save
+        offset: 744488960 # 0x1FE00000 + ubuntu-boot(0xC800000) = 0x2C600000
+        role: system-save
+        filesystem: ext4
+        type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
+        size: 16M
+      - name: ubuntu-data
+        offset: 761266176 # 0x2C600000 + ubuntu-save(0x1000000) = 0x2D600000
+        role: system-data
+        filesystem: ext4
+        type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
+        size: 1000M
+
