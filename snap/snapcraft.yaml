@@ -145,6 +145,18 @@ parts:
             - boot.sel
             - uboot.conf
 
+    imx-firmware:
+        plugin: nil
+        override-pull: |
+            wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-8.10.bin \
+                 -O firmware-imx.bin
+        override-build: |
+            chmod +x firmware-imx.bin
+            ./firmware-imx.bin --force --auto-accept
+            cp -r firmware-imx-*/firmware ${SNAPCRAFT_PART_INSTALL}
+        prime:
+            - -*
+
 build-packages:
     - bison
     - build-essential
