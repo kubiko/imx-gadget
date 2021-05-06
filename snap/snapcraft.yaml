@@ -102,6 +102,25 @@ parts:
     prime:
       - -*
 
+  optee-client:
+    plugin: make
+    source: https://github.com/OP-TEE/optee_client.git
+    source-type: git
+    source-tag: 3.18.0
+    source-depth: 1
+    make-parameters:
+      - ARCH="arm64"
+      - DEBUG=0
+      - CROSS_COMPILE="${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CFG_TEE_CLIENT_LOAD_PATH="/"
+      - CFG_TA_TEST_PATH=n
+      - CFG_TEE_SUPP_LOG_LEVEL=0
+      - SBINDIR=/usr/sbin
+      - LIBDIR=/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+    stage:
+      - usr/sbin
+      - usr/lib/*/lib*so*
+
   optee-fde:
     plugin: dump
     source: https://git.launchpad.net/~ondrak/+git/optee-uc-fde
