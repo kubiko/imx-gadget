@@ -14,6 +14,20 @@ architectures:
 confinement: strict
 grade: stable
 
+environment:
+    LD_LIBRARY_PATH: ${SNAP}/usr/lib
+    PATH: ${SNAP}/bin:${PATH}
+    OPTEE_LIB: $SNAP/lib/optee_armtz
+    OPTEE_FS_PARENT_PATH: $SNAP_COMMON
+
+apps:
+    tee-supplicant:
+        adapter: none
+        command: usr/sbin/tee-supplicant
+        daemon: simple
+        plugs:
+            - tee
+
 parts:
     arm-trusted-firmware:
         plugin: nil
