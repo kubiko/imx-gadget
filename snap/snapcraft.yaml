@@ -1,0 +1,15 @@
+name: imx8mm-evk
+summary: NXP i.MX8M Mini EVK support package
+description: |
+ Support files for booting i.MX8M Mini EVK board
+version: 20-1
+type: gadget
+
+base: core20
+
+architectures:
+  - build-on: [amd64, arm64]
+    run-on: arm64
+
+confinement: strict
+grade: stable
