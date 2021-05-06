@@ -1,6 +1,6 @@
-# i.MX8M Mini evk Gadget Snap
+# i.MX8M Plus evk Gadget Snap
 
-This repository contains the official Ubuntu Core gadget snap for the i.MX8M Mini Eval Kit
+This repository contains the official Ubuntu Core gadget snap for the i.MX8M Plus Eval Kit
 
 ## Gadget Snaps
 
