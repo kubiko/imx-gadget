@@ -122,6 +122,49 @@ parts:
     prime:
       - -*
 
+  u-boot:
+    after:
+      - pub-signing-key
+      - flash-script
+    plugin: nil
+    source: https://git.launchpad.net/~ondrak/+git/u-boot
+    source-type: git
+    source-tag: lf-5.15.71-2.2.0-uc
+    source-depth: 1
+    build-environment:
+      - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CC: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc"
+    override-build: |
+      # copy in place dtsi with pub part of kernel signing key
+      cp ${CRAFT_STAGE}/u-boot-pubkey.dtsi \
+         ${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi
+      # update mmc_seed_part and mmc_boot_part from uc.lst
+      mmc_seed_part="$(grep mmc_seed_part ${CRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
+      mmc_boot_part="$(grep mmc_boot_part ${CRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
+      sed -i \
+         -e 's/mmc_seed_part=\(.*\)\\0"/'"${mmc_seed_part}"'\\0"/g' \
+         -e 's/mmc_boot_part=\(.*\)\\0"/'"${mmc_boot_part}"'\\0"/g' \
+         ${CRAFT_PART_BUILD}/include/configs/*.h
+      # Add GIT revision to the local version
+      head=$(git rev-parse --verify --short HEAD 2> /dev/null)
+      imx_version=$(git describe --tags | cut -c 4-)
+      printf "%s%s%s" "-${imx_version}" "+g" "${head}" > .scmversion
+      make imx8mm_evk_config
+      make -j$(nproc)
+      cp u-boot.bin ${CRAFT_PART_INSTALL}/u-boot.bin
+      cp spl/u-boot-spl.bin ${CRAFT_PART_INSTALL}/u-boot-spl.bin
+      mkdir -p ${CRAFT_PART_INSTALL}/imx-boot-tools
+      cp u-boot-nodtb.bin ${CRAFT_PART_INSTALL}/imx-boot-tools
+      cp u-boot.dtb \
+         ${CRAFT_PART_INSTALL}/imx-boot-tools/imx8mm-evk.dtb
+      # copy tools/mkimage tool for imx-boot stage
+      cp tools/mkimage ${CRAFT_PART_INSTALL}
+      tools/mkenvimage -r -s 4096 -o ${CRAFT_PART_INSTALL}/boot.sel - < /dev/null
+      touch ${CRAFT_PART_INSTALL}/uboot.conf
+    prime:
+      - boot.sel
+      - uboot.conf
+
 build-packages:
   - bison
   - build-essential
