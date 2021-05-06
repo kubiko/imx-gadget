@@ -56,6 +56,7 @@ parts:
     optee-os:
         after:
             - optee-fde
+            - optee-keys
         plugin: nil
         source: https://source.codeaurora.org/external/imx/imx-optee-os.git
         source-type: git
@@ -77,8 +78,8 @@ parts:
             # add optee-fde TA
             cp -r ${SNAPCRAFT_STAGE}/optee-fde/ta/fde_key_handler ${SNAPCRAFT_PART_BUILD}/ta/
             # determine keys to be used
-            # TA_PUBLIC_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_public.pem"
-            # TA_SIGN_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_private.pem"
+            TA_PUBLIC_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_public.pem"
+            TA_SIGN_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_private.pem"
             make O=${SNAPCRAFT_PART_BUILD}/out -j$(nproc)
             make O=${SNAPCRAFT_PART_BUILD}/out -j$(nproc) \
                  CFG_EARLY_TA=y \
