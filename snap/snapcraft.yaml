@@ -14,3 +14,27 @@ architectures:
 
 confinement: strict
 grade: stable
+
+build-packages:
+  - bison
+  - build-essential
+  - device-tree-compiler
+  - flex
+  - libgnutls28-dev
+  - libssl-dev
+  - libxml2-dev
+  - pkgconf
+  - python3
+  - python3-cryptography
+  - python3-pycryptodome
+  - python3-pyelftools
+  - wget
+  - zlib1g-dev
+  - on amd64:
+    - gcc-${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+    - libc6-dev-${CRAFT_ARCH_BUILD_FOR}-cross
+    - uuid-dev:${CRAFT_ARCH_BUILD_FOR}
+    - uuid-dev
+  - on arm64:
+    - gcc
+    - uuid-dev
