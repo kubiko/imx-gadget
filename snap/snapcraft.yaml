@@ -42,6 +42,15 @@ parts:
         prime:
             - -*
 
+    optee-fde:
+        plugin: dump
+        source: git+ssh://git.launchpad.net/~ondrak/+git/optee-uc-fde
+        source-type: git
+        organize:
+            '*': optee-fde/
+        prime:
+            - -*
+
 build-packages:
     - bison
     - build-essential
