@@ -181,6 +181,21 @@ parts:
       - boot.sel
       - uboot.conf
 
+  imx-firmware:
+    plugin: nil
+    override-pull: |
+      # latest firmware version can be found in
+      # https://github.com/nxp-imx/meta-imx/ -b <relevant release> in SCR-<release version>.txt
+      firmware_version="8.18"
+      wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-${firmware_version}.bin \
+        -O firmware-imx.bin
+    override-build: |
+      chmod +x "${CRAFT_PART_BUILD}/firmware-imx.bin"
+      "${CRAFT_PART_BUILD}/firmware-imx.bin" --force --auto-accept
+      cp -r "${CRAFT_PART_BUILD}/firmware-imx-"*/firmware "${CRAFT_PART_INSTALL}/"
+    prime:
+      - -*
+
 build-packages:
   - bison
   - build-essential
