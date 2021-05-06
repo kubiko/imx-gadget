@@ -14,6 +14,34 @@ architectures:
 confinement: strict
 grade: stable
 
+parts:
+    arm-trusted-firmware:
+        plugin: nil
+        source: https://source.codeaurora.org/external/imx/imx-atf.git
+        source-type: git
+        source-tag: rel_imx_5.4.70_2.3.0
+        override-build: |
+            platform="imx8mm"
+            make \
+                CROSS_COMPILE=aarch64-linux-gnu- \
+                PLAT=${platform} \
+                BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build \
+                bl31 \
+                -j$(nproc)
+            make \
+                CROSS_COMPILE=aarch64-linux-gnu- \
+                PLAT=${platform} \
+                BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build-optee \
+                SPD=opteed \
+                bl31 \
+                -j$(nproc)
+            cp ${SNAPCRAFT_PART_BUILD}/build/${platform}/release/bl31.bin \
+               ${SNAPCRAFT_PART_INSTALL}/bl31-${platform}.bin
+            cp ${SNAPCRAFT_PART_BUILD}/build-optee/${platform}/release/bl31.bin \
+               ${SNAPCRAFT_PART_INSTALL}/bl31-${platform}.bin-optee
+        prime:
+            - -*
+
 build-packages:
     - bison
     - build-essential
