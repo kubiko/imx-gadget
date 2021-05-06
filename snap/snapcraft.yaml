@@ -112,6 +112,16 @@ parts:
     prime:
       - -*
 
+  pub-signing-key:
+    plugin: dump
+    source: https://git.launchpad.net/~ondrak/+git/dev-keys
+    source-type: git
+    source-branch: master
+    stage:
+      - u-boot-pubkey.dtsi
+    prime:
+      - -*
+
 build-packages:
   - bison
   - build-essential
