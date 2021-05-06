@@ -224,6 +224,70 @@ parts:
         organize:
             flash.bin: blobs/imx-boot.bin
 
+    flash-script: # uuu flash script
+        plugin: nil
+        override-build: |
+          # get seed offset and size from gadget yaml
+          seed_offset=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .offset' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+          size=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .size' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+          seed_uuid=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .type' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+          case $size in
+             (0)  seed_size="0" ;;
+             (*G | *g) seed_size=$(expr $(echo $size | sed -e 's/G//g' -e 's/g//g') \* 1024 \* 1024 \* 1024) ;;
+             (*M | *m) seed_size=$(expr $(echo $size | sed -e 's/M//g' -e 's/m//g') \* 1024 \* 1024) ;;
+             (*K | *k) seed_size=$(expr $(echo $size | sed -e 's/K//g' -e 's/k//g') \* 1024) ;;
+             (*) seed_size=${size} ;;
+          esac
+          cat << EOF > ${SNAPCRAFT_PART_INSTALL}/uc.lst
+          uuu_version 1.4.69
+
+          # This command will be run when i.MX6/7 i.MX8MM, i.MX8MQ
+          SDP: boot -f imx-boot.bin
+
+          # This command will be run when ROM support stream mode
+          # i.MX8QXP, i.MX8QM
+          SDPS: boot -f imx-boot.bin
+
+          # These commands will be run when use SPL and will be skipped if no spl
+          # SDPU will be deprecated. please use SDPV instead of SDPU
+          # {
+          SDPU: delay 1000
+          SDPU: write -f imx-boot.bin -offset 0x57c00
+          SDPU: jump
+          # }
+
+          # These commands will be run when use SPL and will be skipped if no spl
+          # if (SPL support SDPV)
+          # {
+          SDPV: delay 1000
+          SDPV: write -f imx-boot.bin -skipspl
+          SDPV: jump
+          # }
+
+          # use fastboot to write bootloader
+          FB: ucmd setenv fastboot_dev mmc
+          FB: ucmd setenv mmcdev \${emmc_dev}
+          FB: ucmd mmc dev \${emmc_dev}
+          FB: flash bootloader  imx-boot.bin
+
+          # create new partition table
+          FB: ucmd setenv partitions 'uuid_disk=\${uuid_gpt_disk};name=ubuntu-seed,size=${seed_size},start=${seed_offset},uuid=${seed_uuid}'
+          FB: ucmd gpt write mmc \${emmc_dev} \${partitions}
+
+          # force re-read partition table
+          FB: ucmd setenv mmcdev \${emmc_dev}
+          FB: ucmd setenv fastboot_dev mmc
+
+          # Flashing partitions, use timeout 20s
+          FB: ucmd echo "If ubuntu-seed partition does not exist, powercycle the device"
+          FB[-t 20000]: flash ubuntu-seed ubuntu-seed.img
+          FB: done
+          EOF
+        organize:
+            uc.lst: blobs/
+        build-snaps:
+            - yq
+
 build-packages:
     - bison
     - build-essential
