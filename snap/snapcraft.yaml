@@ -247,6 +247,124 @@ parts:
     organize:
       flash.bin: blobs/imx-boot.bin
 
+  flash-script: # uuu flash script
+    plugin: nil
+    override-build: |
+      # get seed offset and size from gadget yaml
+      convert_size() {
+      case $1 in
+        (0)  seed_size="0" ;;
+        (*G | *g) echo $(expr $(echo $1 | sed -e 's/G//g' -e 's/g//g') \* 1024 \* 1024 \* 1024) ;;
+        (*M | *m) echo $(expr $(echo $1 | sed -e 's/M//g' -e 's/m//g') \* 1024 \* 1024) ;;
+        (*K | *k) echo $(expr $(echo $1 | sed -e 's/K//g' -e 's/k//g') \* 1024) ;;
+        (*) echo ${1} ;;
+      esac
+      }
+
+      # avoid confinement for yq as we might run as root
+      yq="/snap/yq/current/bin/yq"
+      # read all the partitions before ubuntu-boot and include those in the created part table
+      # additionally calculate part number for seed and boot, we need those for u-boot build
+      gpt_partitions="uuid_disk=\${uuid_gpt_disk}"
+      part_number=0
+      # this is good opportunity to validate offset of the partitions, if defined
+      # it saves us from failed boot
+      # default 1st partition offset is 1MB, unless defined otherwise
+      partition_offset=0
+      unset mmc_boot_part mmc_seed_part
+      for p in $(${yq} eval '.volumes.[].structure.[].name' ${CRAFT_PROJECT_DIR}/gadget.yaml)
+      do
+      # ignore bare structures
+      if [ "${p}" != "null" ]; then
+        part_number=$((part_number+1))
+        # only read till ubuntu-boot partition
+        if [ "${p}" == "ubuntu-boot" ]; then
+          mmc_boot_part="${part_number}"
+        fi
+        if [ "${p}" == "ubuntu-seed" ]; then
+          mmc_seed_part="${part_number}"
+        fi
+
+        # include partitions in the list
+        export p=${p}
+        p_offset=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .offset' ${CRAFT_PROJECT_DIR}/gadget.yaml)
+        p_size=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .size' ${CRAFT_PROJECT_DIR}/gadget.yaml)
+        p_type=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' ${CRAFT_PROJECT_DIR}/gadget.yaml)
+        p_size=$(convert_size ${p_size})
+        gpt_partitions="${gpt_partitions};name=${p},size=${p_size},start=${p_offset},type=${p_type}"
+        if [ "${partition_offset}" == "0" ]; then
+          # first partion, if there no offset defined, use default 1MB (1048576)
+          if [ -n "${p_offset}" ] && [ "${p_offset}" != "null" ]; then
+            partition_offset=${p_offset}
+          else
+            partition_offset=1048576
+          fi
+        fi
+        if [ "${p_offset}" != "${partition_offset}" ]; then
+          echo "Unexpected offset for partition ${p}, defined: ${p_offset}, expected: ${partition_offset}"
+          exit 1
+        else
+          echo "Validated offset for partition ${p}, offset: ${p_offset}"
+        fi
+        # calculate next offset
+        partition_offset=$((partition_offset+p_size))
+        unset p
+      fi
+      done
+
+      cat << EOF > ${CRAFT_PART_INSTALL}/uc.lst
+      uuu_version 1.4.69
+
+      # This command will be run when i.MX6/7 i.MX8MM, i.MX8MQ
+      SDP: boot -f imx-boot.bin
+
+      # This command will be run when ROM support stream mode
+      # i.MX8QXP, i.MX8QM
+      SDPS: boot -f imx-boot.bin
+
+      # These commands will be run when use SPL and will be skipped if no spl
+      # SDPU will be deprecated. please use SDPV instead of SDPU
+      # {
+      SDPU: delay 1000
+      SDPU: write -f imx-boot.bin -offset 0x57c00
+      SDPU: jump
+      # }
+
+      # These commands will be run when use SPL and will be skipped if no spl
+      # if (SPL support SDPV)
+      # {
+      SDPV: delay 1000
+      SDPV: write -f imx-boot.bin -skipspl
+      SDPV: jump
+      # }
+
+      # use fastboot to write bootloader
+      FB: ucmd setenv fastboot_dev mmc
+      FB: ucmd setenv mmcdev \${emmc_dev}
+      FB: ucmd mmc dev \${emmc_dev}
+      FB: flash bootloader  imx-boot.bin
+
+      # create new partition table
+      # boot critical partition number (used for u-boot build config)
+      # mmc_boot_part=${mmc_boot_part}
+      # mmc_seed_part=${mmc_seed_part}
+      FB: ucmd setenv partitions '${gpt_partitions}'
+      FB: ucmd gpt write mmc \${emmc_dev} \${partitions}
+
+      # force re-read partition table
+      FB: ucmd setenv mmcdev \${emmc_dev}
+      FB: ucmd setenv fastboot_dev mmc
+
+      # Flashing partitions, use timeout 20s
+      FB: ucmd echo "If ubuntu-seed partition does not exist, powercycle the device"
+      FB[-t 20000]: flash ubuntu-seed ubuntu-seed.img
+      FB: done
+      EOF
+    organize:
+      uc.lst: blobs/
+    build-snaps:
+      - yq
+
 build-packages:
   - bison
   - build-essential
