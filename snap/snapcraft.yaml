@@ -15,6 +15,18 @@ architectures:
 confinement: strict
 grade: stable
 
+environment:
+  LD_LIBRARY_PATH: ${SNAP}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+  PATH: ${SNAP}/bin:${PATH}
+
+apps:
+  tee-supplicant:
+    command: usr/sbin/tee-supplicant --fs-parent-path $SNAP_SAVE_DATA/optee-fs --ta-dir $SNAP_COMMON/lib/optee_armtz --plugin-path $SNAP_COMMON/usr/lib/tee-supplicant/plugins
+    daemon: simple
+    plugs:
+      - network-bind
+      - tee
+
 parts:
   arm-trusted-firmware:
     plugin: nil
