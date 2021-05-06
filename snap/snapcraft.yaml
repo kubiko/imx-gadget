@@ -157,6 +157,40 @@ parts:
         prime:
             - -*
 
+    imx-boot:
+        after:
+            - arm-trusted-firmware
+            - imx-firmware
+            - optee-os
+            - u-boot
+        plugin: nil
+        source: https://source.codeaurora.org/external/imx/imx-mkimage.git
+        source-type: git
+        source-tag: rel_imx_5.4.70_2.3.0
+        override-build: |
+            platform="imx8mm"
+            # firmware files
+            for ddr_firmware in lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train_1d_dmem.bin lpddr4_pmu_train_2d_imem.bin lpddr4_pmu_train_2d_dmem.bin; do
+              cp ${SNAPCRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware} iMX8M
+            done
+            cp ${SNAPCRAFT_STAGE}/firmware/hdmi/cadence/signed_dp_imx8m.bin iMX8M
+            cp ${SNAPCRAFT_STAGE}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin iMX8M
+            # atf
+            cp ${SNAPCRAFT_STAGE}/bl31-${platform}.bin-optee iMX8M/bl31.bin
+            # optee
+            cp ${SNAPCRAFT_STAGE}/tee.bin iMX8M
+            # u-boot
+            cp ${SNAPCRAFT_STAGE}/u-boot.bin iMX8M
+            cp ${SNAPCRAFT_STAGE}/u-boot-spl.bin iMX8M
+            cp ${SNAPCRAFT_STAGE}/imx-boot-tools/u-boot-nodtb.bin iMX8M
+            cp ${SNAPCRAFT_STAGE}/imx-boot-tools/${platform}-evk.dtb iMX8M
+            # setup link to mkimage_uboot
+            ln -sf ${SNAPCRAFT_STAGE}/mkimage iMX8M/mkimage_uboot
+            make SOC=iMX8MM flash_evk
+            cp iMX8M/flash.bin ${SNAPCRAFT_PART_INSTALL}/
+        organize:
+            flash.bin: blobs/imx-boot.bin
+
 build-packages:
     - bison
     - build-essential
