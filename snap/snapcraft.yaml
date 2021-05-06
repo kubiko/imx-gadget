@@ -42,6 +42,45 @@ parts:
         prime:
             - -*
 
+    optee-os:
+        after:
+            - optee-fde
+        plugin: nil
+        source: https://source.codeaurora.org/external/imx/imx-optee-os.git
+        source-type: git
+        source-tag: rel_imx_5.4.70_2.3.0
+        override-build: |
+            export ARCH="arm"
+            export CROSS_COMPILE="aarch64-linux-gnu-"
+            export CROSS_COMPILE_core="aarch64-linux-gnu-"
+            export CROSS_COMPILE_ta_arm64="aarch64-linux-gnu-"
+            export CFG_USER_TA_TARGETS="ta_arm64"
+            export CFG_ARM64_core=y
+            export DEBUG=0 \
+            export CFG_TEE_CORE_LOG_LEVEL=1 \
+            export CFG_TEE_TA_LOG_LEVEL=1 \
+            export CFG_TEE_BENCHMARK=n
+            # set NXP platform
+            export PLATFORM=imx
+            export PLATFORM_FLAVOR=mx8mmevk
+            # add optee-fde TA
+            cp -r ${SNAPCRAFT_STAGE}/optee-fde/ta/fde_key_handler ${SNAPCRAFT_PART_BUILD}/ta/
+            # determine keys to be used
+            # TA_PUBLIC_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_public.pem"
+            # TA_SIGN_KEY="${SNAPCRAFT_STAGE}/ta-keys/ta_private.pem"
+            make O=${SNAPCRAFT_PART_BUILD}/out -j$(nproc)
+            make O=${SNAPCRAFT_PART_BUILD}/out -j$(nproc) \
+                 CFG_EARLY_TA=y \
+                 EARLY_TA_PATHS="out/ta/pkcs11/fd02c9da-306c-48c7-a49c-bbd827ae86ee.stripped.elf \
+                                 out/ta/trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c.stripped.elf \
+                                 out/ta/fde_key_handler/fd1b2a86-3668-11eb-adc1-0242ac120002.stripped.elf"
+            aarch64-linux-gnu-objcopy \
+                 -O binary \
+                 ${SNAPCRAFT_PART_BUILD}/out/core/tee.elf \
+                 ${SNAPCRAFT_PART_INSTALL}/tee.bin
+        prime:
+            - -*
+
     optee-fde:
         plugin: dump
         source: git+ssh://git.launchpad.net/~ondrak/+git/optee-uc-fde
