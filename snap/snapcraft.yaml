@@ -44,6 +44,54 @@ parts:
     prime:
       - -*
 
+  optee-os:
+    after:
+      - optee-fde
+      - optee-keys
+    plugin: nil
+    source: https://github.com/nxp-imx/imx-optee-os.git
+    source-type: git
+    source-tag: lf-5.15.71-2.2.0
+    source-depth: 1
+    build-environment:
+      - ARCH: "arm"
+      - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CROSS_COMPILE_core: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CROSS_COMPILE_ta_arm64: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CFG_ARM64_core: "y"
+      - CFG_USER_TA_TARGETS: "ta_arm64"
+      - CFG_TEE_CORE_LOG_LEVEL: "1"
+      - CFG_TEE_TA_LOG_LEVEL: "1"
+      - CFG_TEE_BENCHMARK: "n"
+      - CFG_TEE_CORE_DEBUG: "n"
+      - CFG_TEE_RAM_VA_SIZE: "0x00280000"
+      - CFG_CORE_HEAP_SIZE: "0x00100000"
+      - DEBUG: "0"
+      - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
+      - PLATFORM: "imx"
+      - PLATFORM_FLAVOR: "mx8mmevk"
+      - PYTHON: "/usr/bin/python3"
+      - PYTHONHOME: "/usr"
+      - PYTHONPATH: "/usr/lib/python3.11:/usr/lib/python3.11/lib-dynload:/usr/lib/python3/dist-packages"
+      - PYTHONIOENCODING: utf-8
+    override-build: |
+      # add optee-fde TA
+      cp -r ${CRAFT_STAGE}/optee-fde/ta/fde_key_handler ${CRAFT_PART_BUILD}/ta/
+      export OPTEE_VERSION=$(head -1 CHANGELOG.md  | sed 's/# OP-TEE - version \(.*\) (.*/\1/g')-imx
+      make O=${CRAFT_PART_BUILD}/out -j$(nproc)
+      # build again with early TAs
+      make O=${CRAFT_PART_BUILD}/out -j$(nproc) \
+         CFG_EARLY_TA=y \
+         EARLY_TA_PATHS="out/ta/pkcs11/fd02c9da-306c-48c7-a49c-bbd827ae86ee.stripped.elf \
+                 out/ta/trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c.stripped.elf \
+                 out/ta/fde_key_handler/fd1b2a86-3668-11eb-adc1-0242ac120002.stripped.elf"
+      ${CRAFT_ARCH_TRIPLET_BUILD_FOR}-objcopy \
+         -O binary \
+         ${CRAFT_PART_BUILD}/out/core/tee.elf \
+         ${CRAFT_PART_INSTALL}/tee.bin
+    prime:
+      - -*
+
   optee-fde:
     plugin: dump
     source: https://git.launchpad.net/~ondrak/+git/optee-uc-fde
