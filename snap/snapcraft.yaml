@@ -263,23 +263,20 @@ parts:
           SDPV: jump
           # }
 
-          # use fastboot to write bootloader
+          # Fastboot commands
+          # Set vars, maybe not needed as we reflash u-boot?
           FB: ucmd setenv fastboot_dev mmc
           FB: ucmd setenv mmcdev \${emmc_dev}
+          # Select existing emmc for fb (2 for ev kit)
           FB: ucmd mmc dev \${emmc_dev}
-          FB: flash bootloader  imx-boot.bin
-
-          # create new partition table
-          FB: ucmd setenv partitions 'uuid_disk=\${uuid_gpt_disk};name=ubuntu-seed,size=${seed_size},start=${seed_offset},uuid=${seed_uuid}'
-          FB: ucmd gpt write mmc \${emmc_dev} \${partitions}
-
-          # force re-read partition table
-          FB: ucmd setenv mmcdev \${emmc_dev}
-          FB: ucmd setenv fastboot_dev mmc
-
-          # Flashing partitions, use timeout 20s
-          FB: ucmd echo "If ubuntu-seed partition does not exist, powercycle the device"
-          FB[-t 20000]: flash ubuntu-seed ubuntu-seed.img
+          # Flash bootloader
+          FB: flash bootloader imx-boot.bin
+          # Flash image
+          FB: ucmd echo "Flashing UC image"
+          FB: flash -raw2sparse all emmc.img
+          # Set mmcblk2boot0 as boot partition
+          FB: ucmd if env exists emmc_ack; then ; else setenv emmc_ack 0; fi;
+          FB: ucmd mmc partconf \${emmc_dev} \${emmc_ack} 1 0
           FB: done
           EOF
         organize:
