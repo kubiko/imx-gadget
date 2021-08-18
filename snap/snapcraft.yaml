@@ -34,7 +34,8 @@ parts:
         plugin: nil
         source: https://source.codeaurora.org/external/imx/imx-atf.git
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.0
+        source-tag: rel_imx_5.4.70_2.3.2
+        source-depth: 1
         override-build: |
             platform="imx8mm"
             make \
@@ -75,7 +76,8 @@ parts:
         plugin: nil
         source: https://source.codeaurora.org/external/imx/imx-optee-os.git
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.0
+        source-tag: rel_imx_5.4.70_2.3.2
+        source-depth: 1
         override-build: |
             export ARCH="arm"
             export CROSS_COMPILE="aarch64-linux-gnu-"
@@ -112,7 +114,8 @@ parts:
         plugin: nil
         source: https://source.codeaurora.org/external/imx/imx-optee-client.git
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.0
+        source-tag: rel_imx_5.4.70_2.3.2
+        source-depth: 1
         override-build: |
             export ARCH="arm64"
             export CROSS_COMPILE="aarch64-linux-gnu-"
@@ -151,7 +154,8 @@ parts:
         plugin: nil
         source: https://git.launchpad.net/~ondrak/+git/u-boot
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.0-uc
+        source-tag: rel_imx_5.4.70_2.3.2-uc
+        source-depth: 1
         override-build: |
             # copy in place dtsi with pub part of kernel signing key
             cp ${SNAPCRAFT_STAGE}/u-boot-pubkey.dtsi \
@@ -199,7 +203,8 @@ parts:
         plugin: nil
         source: https://source.codeaurora.org/external/imx/imx-mkimage.git
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.0
+        source-tag: rel_imx_5.4.70_2.3.2
+        source-depth: 1
         override-build: |
             platform="imx8mm"
             # firmware files
