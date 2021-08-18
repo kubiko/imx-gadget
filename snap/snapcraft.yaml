@@ -232,16 +232,20 @@ parts:
         plugin: nil
         override-build: |
           # get seed offset and size from gadget yaml
+          concert_size() {
+            case $1 in
+              (0)  seed_size="0" ;;
+              (*G | *g) echo $(expr $(echo $1 | sed -e 's/G//g' -e 's/g//g') \* 1024 \* 1024 \* 1024) ;;
+              (*M | *m) echo $(expr $(echo $1 | sed -e 's/M//g' -e 's/m//g') \* 1024 \* 1024) ;;
+              (*K | *k) echo $(expr $(echo $1 | sed -e 's/K//g' -e 's/k//g') \* 1024) ;;
+              (*) echo ${1} ;;
+            esac
+          }
           seed_offset=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .offset' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
-          size=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .size' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+          seedsize=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .size' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
           seed_uuid=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .type' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
-          case $size in
-             (0)  seed_size="0" ;;
-             (*G | *g) seed_size=$(expr $(echo $size | sed -e 's/G//g' -e 's/g//g') \* 1024 \* 1024 \* 1024) ;;
-             (*M | *m) seed_size=$(expr $(echo $size | sed -e 's/M//g' -e 's/m//g') \* 1024 \* 1024) ;;
-             (*K | *k) seed_size=$(expr $(echo $size | sed -e 's/K//g' -e 's/k//g') \* 1024) ;;
-             (*) seed_size=${size} ;;
-          esac
+          seed_size=$(concert_size ${seedsize})
+
           cat << EOF > ${SNAPCRAFT_PART_INSTALL}/uc.lst
           uuu_version 1.4.69
 
