@@ -101,18 +101,20 @@ parts:
                  EARLY_TA_PATHS="out/ta/pkcs11/fd02c9da-306c-48c7-a49c-bbd827ae86ee.stripped.elf \
                                  out/ta/trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c.stripped.elf \
                                  out/ta/fde_key_handler/fd1b2a86-3668-11eb-adc1-0242ac120002.stripped.elf"
-            aarch64-linux-gnu-objcopy \
-                 -O binary \
-                 ${SNAPCRAFT_PART_BUILD}/out/core/tee.elf \
-                 ${SNAPCRAFT_PART_INSTALL}/tee.bin
+            cp \
+                 ${SNAPCRAFT_PART_BUILD}/out/core/tee-*.bin \
+                 ${SNAPCRAFT_PART_INSTALL}/
+            cp \
+                 ${SNAPCRAFT_PART_BUILD}/out/core/tee.bin \
+                 ${SNAPCRAFT_PART_INSTALL}/
         prime:
             - -*
 
     optee-client:
         plugin: nil
-        source: https://source.codeaurora.org/external/imx/imx-optee-client.git
+        source: https://github.com/OP-TEE/optee_client.git
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.2
+        source-tag: "3.11.0"
         source-depth: 1
         override-build: |
             export ARCH="arm64"
