@@ -73,9 +73,9 @@ parts:
             - optee-fde
             - optee-keys
         plugin: nil
-        source: https://source.codeaurora.org/external/imx/imx-optee-os.git
+        source: https://source.codeaurora.org/external/autobsps32/optee_os
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.2
+        source-tag: bsp29.0-3.11
         source-depth: 1
         override-build: |
             export ARCH="arm"
@@ -89,8 +89,7 @@ parts:
             export CFG_TEE_TA_LOG_LEVEL=1 \
             export CFG_TEE_BENCHMARK=n
             # set NXP platform
-            export PLATFORM=imx
-            export PLATFORM_FLAVOR=mx8mmevk
+            export PLATFORM=s32g
             # add optee-fde TA
             cp -r ${SNAPCRAFT_STAGE}/optee-fde/ta/fde_key_handler ${SNAPCRAFT_PART_BUILD}/ta/
             # determine keys to be used
