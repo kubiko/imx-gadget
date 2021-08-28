@@ -30,32 +30,33 @@ apps:
 
 parts:
     arm-trusted-firmware:
+        after:
+            - optee-os
+            - u-boot
         plugin: nil
-        source: https://source.codeaurora.org/external/imx/imx-atf.git
+        source: https://source.codeaurora.org/external/autobsps32/arm-trusted-firmware.git
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.2
+        source-tag: bsp29.0-2.3
         source-depth: 1
         override-build: |
-            platform="imx8mm"
+            platform="s32g"
             make \
+                ARCH=aarch64 \
                 CROSS_COMPILE=aarch64-linux-gnu- \
-                PLAT=${platform} \
+                PLAT="s32g" \
                 BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build \
-                bl31 \
-                -j$(nproc)
-            make \
-                CROSS_COMPILE=aarch64-linux-gnu- \
-                PLAT=${platform} \
-                BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build-optee \
+                BL32=${SNAPCRAFT_STAGE}/tee-header_v2.bin \
+                BL32_EXTRA1=${SNAPCRAFT_STAGE}/tee-pager_v2.bin \
+                BL33=${SNAPCRAFT_STAGE}/u-boot.bin \
                 SPD=opteed \
-                bl31 \
                 -j$(nproc)
-            cp ${SNAPCRAFT_PART_BUILD}/build/${platform}/release/bl31.bin \
-               ${SNAPCRAFT_PART_INSTALL}/bl31-${platform}.bin
-            cp ${SNAPCRAFT_PART_BUILD}/build-optee/${platform}/release/bl31.bin \
-               ${SNAPCRAFT_PART_INSTALL}/bl31-${platform}.bin-optee
-        prime:
-            - -*
+            cp ${SNAPCRAFT_PART_BUILD}/build/${platform}/release/fip.s32 \
+               ${SNAPCRAFT_PART_INSTALL}/imx-boot.bin
+            dd if=${SNAPCRAFT_PART_INSTALL}/imx-boot.bin of=${SNAPCRAFT_PART_INSTALL}/sbl_header.bin bs=256 count=1 seek=0 conv=fsync,notrunc
+            dd if=${SNAPCRAFT_PART_INSTALL}/imx-boot.bin of=${SNAPCRAFT_PART_INSTALL}/sbl.bin bs=512K seek=512 iflag=skip_bytes oflag=seek_bytes conv=fsync,notrunc
+
+        organize:
+            '*': blobs/
 
     # optee signing keys: used for signing ot Trusted Applications
     optee-keys:
