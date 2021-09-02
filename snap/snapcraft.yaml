@@ -1,7 +1,7 @@
-name: imx8mm-evk
-summary: NXP i.MX8M Mini EVK support package
+name: s32g274a-rdb2
+summary: NXP s32g 274a rdb2 support package
 description: |
- Support files for booting i.MX8M Mini EVK board
+ Support files for booting s32g 274a rdb2 board
 version: 20-1
 type: gadget
 
