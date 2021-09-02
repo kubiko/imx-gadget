@@ -155,7 +155,7 @@ parts:
         plugin: nil
         source: https://git.launchpad.net/~ondrak/+git/u-boot
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.2-uc
+        source-tag: bsp29.0-2020.04-uc
         source-depth: 1
         override-build: |
             # copy in place dtsi with pub part of kernel signing key
@@ -163,20 +163,16 @@ parts:
                ${SNAPCRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi
             # Add GIT revision to the local version
             head=`git rev-parse --verify --short HEAD 2> /dev/null`
-            printf "%s%s%s" "-5.4.70-2.3.0" +g $head > .scmversion
+            printf "%s%s%s" "bsp29.0-3.11" +g $head > .scmversion
             export CROSS_COMPILE="aarch64-linux-gnu-"
             export CC="aarch64-linux-gnu-gcc"
-            # TODO: export ARCH=arm64
-            make imx8mm_evk_config
+            export ARCH=arm64
+            make s32g274ardb2_defconfig
             make -j$(nproc)
-            cp u-boot.bin ${SNAPCRAFT_PART_INSTALL}/u-boot.bin
-            cp spl/u-boot-spl.bin ${SNAPCRAFT_PART_INSTALL}/u-boot-spl.bin
-            mkdir -p ${SNAPCRAFT_PART_INSTALL}/imx-boot-tools
-            cp u-boot-nodtb.bin ${SNAPCRAFT_PART_INSTALL}/imx-boot-tools
-            cp u-boot.dtb \
-               ${SNAPCRAFT_PART_INSTALL}/imx-boot-tools/imx8mm-evk.dtb
+            cp u-boot.bin ${SNAPCRAFT_PART_INSTALL}
             # copy tools/mkimage tool for imx-boot stage
-            cp tools/mkimage ${SNAPCRAFT_PART_INSTALL}
+            mkdir -p ${SNAPCRAFT_PART_INSTALL}/tools
+            cp tools/mkimage ${SNAPCRAFT_PART_INSTALL}/tools
             tools/mkenvimage -r -s 4096 -o ${SNAPCRAFT_PART_INSTALL}/boot.sel - < /dev/null
             touch ${SNAPCRAFT_PART_INSTALL}/uboot.conf
         prime:
