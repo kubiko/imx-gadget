@@ -2,7 +2,7 @@ name: s32g274a-rdb2
 summary: NXP s32g 274a rdb2 support package
 description: |
  Support files for booting s32g 274a rdb2 board
-version: 20-1
+version: 20-2
 type: gadget
 
 base: core20
@@ -36,14 +36,14 @@ parts:
         plugin: nil
         source: https://source.codeaurora.org/external/autobsps32/arm-trusted-firmware.git
         source-type: git
-        source-tag: bsp29.0-2.3
+        source-tag: bsp30.0-2.3
         source-depth: 1
         override-build: |
-            platform="s32g"
+            platform="s32g2"
             make \
                 ARCH=aarch64 \
                 CROSS_COMPILE=aarch64-linux-gnu- \
-                PLAT="s32g" \
+                PLAT="${platform}" \
                 BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build \
                 BL32=${SNAPCRAFT_STAGE}/tee-header_v2.bin \
                 BL32_EXTRA1=${SNAPCRAFT_STAGE}/tee-pager_v2.bin \
@@ -76,7 +76,7 @@ parts:
         plugin: nil
         source: https://source.codeaurora.org/external/autobsps32/optee_os
         source-type: git
-        source-tag: bsp29.0-3.11
+        source-tag: bsp30.0-3.11
         source-depth: 1
         override-build: |
             export ARCH="arm"
@@ -155,7 +155,7 @@ parts:
         plugin: nil
         source: https://git.launchpad.net/~ondrak/+git/u-boot
         source-type: git
-        source-tag: bsp29.0-2020.04-uc
+        source-tag: bsp30.0-2020.04-uc
         source-depth: 1
         override-build: |
             # copy in place dtsi with pub part of kernel signing key
