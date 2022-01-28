@@ -37,13 +37,13 @@ parts:
         override-build: |
             platform="imx8mm"
             make \
-                CROSS_COMPILE=aarch64-linux-gnu- \
+                CROSS_COMPILE=${SNAPCRAFT_ARCH_TRIPLET}- \
                 PLAT=${platform} \
                 BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build \
                 bl31 \
                 -j$(nproc)
             make \
-                CROSS_COMPILE=aarch64-linux-gnu- \
+                CROSS_COMPILE=${SNAPCRAFT_ARCH_TRIPLET}- \
                 PLAT=${platform} \
                 BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build-optee \
                 SPD=opteed \
@@ -74,19 +74,21 @@ parts:
         plugin: nil
         source: https://source.codeaurora.org/external/imx/imx-optee-os.git
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.2
+        # source-tag: rel_imx_5.4.70_2.3.2
+        source-tag: lf-5.10.72-2.2.0
         source-depth: 1
         override-build: |
             export ARCH="arm"
-            export CROSS_COMPILE="aarch64-linux-gnu-"
-            export CROSS_COMPILE_core="aarch64-linux-gnu-"
-            export CROSS_COMPILE_ta_arm64="aarch64-linux-gnu-"
+            export CROSS_COMPILE="${SNAPCRAFT_ARCH_TRIPLET}-"
+            export CROSS_COMPILE_core="${SNAPCRAFT_ARCH_TRIPLET}-"
+            export CROSS_COMPILE_ta_arm64="${SNAPCRAFT_ARCH_TRIPLET}-"
             export CFG_USER_TA_TARGETS="ta_arm64"
             export CFG_ARM64_core=y
-            export DEBUG=0 \
-            export CFG_TEE_CORE_LOG_LEVEL=1 \
-            export CFG_TEE_TA_LOG_LEVEL=1 \
+            export DEBUG=0
+            export CFG_TEE_CORE_LOG_LEVEL=1
+            export CFG_TEE_TA_LOG_LEVEL=1
             export CFG_TEE_BENCHMARK=n
+            export CFG_CORE_HEAP_SIZE=262144
             # set NXP platform
             export PLATFORM=imx
             export PLATFORM_FLAVOR=mx8mmevk
@@ -101,7 +103,7 @@ parts:
                  EARLY_TA_PATHS="out/ta/pkcs11/fd02c9da-306c-48c7-a49c-bbd827ae86ee.stripped.elf \
                                  out/ta/trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c.stripped.elf \
                                  out/ta/fde_key_handler/fd1b2a86-3668-11eb-adc1-0242ac120002.stripped.elf"
-            aarch64-linux-gnu-objcopy \
+            ${SNAPCRAFT_ARCH_TRIPLET}-objcopy \
                  -O binary \
                  ${SNAPCRAFT_PART_BUILD}/out/core/tee.elf \
                  ${SNAPCRAFT_PART_INSTALL}/tee.bin
