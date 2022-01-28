@@ -15,15 +15,13 @@ confinement: strict
 grade: stable
 
 environment:
-    LD_LIBRARY_PATH: ${SNAP}/usr/lib
+    LD_LIBRARY_PATH: ${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
     PATH: ${SNAP}/bin:${PATH}
-    OPTEE_LIB: $SNAP/lib/optee_armtz
-    OPTEE_FS_PARENT_PATH: $SNAP_COMMON
 
 apps:
     tee-supplicant:
         adapter: none
-        command: usr/sbin/tee-supplicant
+        command: sbin/tee-supplicant --fs-parent-path $SNAP_COMMON --ta-dir $SNAP/lib/optee_armtz --plugin-path $SNAP/usr/lib/tee-supplicant/plugins
         daemon: simple
         plugs:
             - tee
@@ -111,23 +109,23 @@ parts:
             - -*
 
     optee-client:
-        plugin: nil
-        source: https://source.codeaurora.org/external/imx/imx-optee-client.git
+        plugin: make
+        source: https://github.com/OP-TEE/optee_client.git
         source-type: git
-        source-tag: rel_imx_5.4.70_2.3.2
+        source-branch: master
         source-depth: 1
-        override-build: |
-            export ARCH="arm64"
-            export CROSS_COMPILE="aarch64-linux-gnu-"
-            export CFG_TEE_CLIENT_LOAD_PATH=""
-            export CFG_TA_TEST_PATH=0
-            export CFG_TEE_SUPP_LOG_LEVEL=0
-            export DESTDIR=${SNAPCRAFT_PART_INSTALL}
-            make -j$(nproc)
-            make install
+        make-parameters:
+            - ARCH="arm64"
+            - DEBUG=0
+            - CROSS_COMPILE="${SNAPCRAFT_ARCH_TRIPLET}-"
+            - CFG_TEE_CLIENT_LOAD_PATH=""
+            - CFG_TA_TEST_PATH=0
+            - CFG_TEE_SUPP_LOG_LEVEL=0
+            - SBINDIR=/sbin
+            - LIBDIR=/usr/lib/${SNAPCRAFT_ARCH_TRIPLET}
         stage:
-            - usr/sbin
-            - usr/lib/lib*so*
+            - sbin
+            - usr/lib/*/lib*so*
 
     optee-fde:
         plugin: dump
