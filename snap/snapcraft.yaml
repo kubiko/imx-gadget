@@ -23,6 +23,7 @@ apps:
         adapter: none
         command: sbin/tee-supplicant --fs-parent-path $SNAP_COMMON --ta-dir $SNAP/lib/optee_armtz --plugin-path $SNAP/usr/lib/tee-supplicant/plugins
         daemon: simple
+        install-mode: disable
         plugs:
             - tee
             - network-bind
