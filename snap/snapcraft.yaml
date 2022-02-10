@@ -21,7 +21,7 @@ environment:
 apps:
     tee-supplicant:
         adapter: none
-        command: sbin/tee-supplicant --fs-parent-path $SNAP_COMMON --ta-dir $SNAP/lib/optee_armtz --plugin-path $SNAP/usr/lib/tee-supplicant/plugins
+        command: sbin/tee-supplicant --fs-parent-path $SNAP_COMMON --ta-dir $SNAP_COMMON/lib/optee_armtz --plugin-path $SNAP_COMMON/usr/lib/tee-supplicant/plugins
         daemon: simple
         install-mode: disable
         plugs:
@@ -313,3 +313,13 @@ build-packages:
     - python3-pycryptodome
     - wget
     - zlib1g-dev
+
+slots:
+    tee-plugins:
+        interface: content
+        write:
+            - $SNAP_COMMON/usr/lib/tee-supplicant/plugins
+    tee-tas:
+        interface: content
+        write:
+            - $SNAP_COMMON/lib/optee_armtz
