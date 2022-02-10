@@ -88,7 +88,8 @@ parts:
             export CFG_TEE_CORE_LOG_LEVEL=1
             export CFG_TEE_TA_LOG_LEVEL=1
             export CFG_TEE_BENCHMARK=n
-            export CFG_CORE_HEAP_SIZE=262144
+            export CFG_TEE_RAM_VA_SIZE=0x00280000
+            export CFG_CORE_HEAP_SIZE=0x00100000
             # set NXP platform
             export PLATFORM=imx
             export PLATFORM_FLAVOR=mx8mmevk
