@@ -153,6 +153,7 @@ parts:
     u-boot:
         after:
             - pub-signing-key
+            - flash-script
         plugin: nil
         source: https://git.launchpad.net/~ondrak/+git/u-boot
         source-type: git
@@ -162,6 +163,13 @@ parts:
             # copy in place dtsi with pub part of kernel signing key
             cp ${SNAPCRAFT_STAGE}/u-boot-pubkey.dtsi \
                ${SNAPCRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi
+            # update mmc_seed_part and mmc_boot_part from uc.lst
+            mmc_seed_part="$(grep mmc_seed_part ${SNAPCRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
+            mmc_boot_part="$(grep mmc_boot_part ${SNAPCRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
+            sed -i \
+               -e 's/mmc_seed_part=\(.*\)\\0"/'"${mmc_seed_part}"'\\0"/g' \
+               -e 's/mmc_boot_part=\(.*\)\\0"/'"${mmc_boot_part}"'\\0"/g' \
+               ${SNAPCRAFT_PART_BUILD}/include/configs/*.h
             # Add GIT revision to the local version
             head=`git rev-parse --verify --short HEAD 2> /dev/null`
             printf "%s%s%s" "-5.4.70-2.3.0" +g $head > .scmversion
