@@ -235,7 +235,7 @@ parts:
         plugin: nil
         override-build: |
           # get seed offset and size from gadget yaml
-          concert_size() {
+          convert_size() {
             case $1 in
               (0)  seed_size="0" ;;
               (*G | *g) echo $(expr $(echo $1 | sed -e 's/G//g' -e 's/g//g') \* 1024 \* 1024 \* 1024) ;;
@@ -244,10 +244,55 @@ parts:
               (*) echo ${1} ;;
             esac
           }
-          seed_offset=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .offset' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
-          seedsize=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .size' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
-          seed_uuid=$(yq eval '.volumes.[].structure.[] | select(.name == "ubuntu-seed") | .type' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
-          seed_size=$(concert_size ${seedsize})
+
+          # read all the partitions before ubuntu-boot and include those in the created part table
+          # additionally calculate part number for seed and boot, we need those for u-boot build
+          gtp_partitions="uuid_disk=\${uuid_gpt_disk}"
+          part_number=0
+          # this is good opportunity to validate offset of the partitions, if defined
+          # it saves us from failed boot
+          # default 1st partition offset is 1MB, unless defined otherwise
+          partition_offset=0
+          unset mmc_boot_part mmc_seed_part
+          for p in $(yq eval '.volumes.[].structure.[].name' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+          do
+            # ignore bare structures
+            if [ "${p}" != "null" ]; then
+              part_number=$((part_number+1))
+              # only read till ubuntu-boot partition
+              if [ "${p}" == "ubuntu-boot" ]; then
+                mmc_boot_part="${part_number}"
+              fi
+              if [ "${p}" == "ubuntu-seed" ]; then
+                mmc_seed_part="${part_number}"
+              fi
+
+              # include partitions in the list
+              export p=${p}
+              p_offset=$(yq eval '.volumes.[].structure.[] | select(.name == env(p)) | .offset' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+              p_size=$(yq eval '.volumes.[].structure.[] | select(.name == env(p)) | .size' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+              p_uuid=$(yq eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+              p_size=$(convert_size ${p_size})
+              gtp_partitions="${gtp_partitions};name=${p},size=${p_size},start=${p_offset},uuid=${p_uuid}"
+              if [ "${partition_offset}" == "0" ]; then
+                # first partion, if there no offset defined, use default 1MB (1048576)
+                if [ -n "${p_offset}" ]; then
+                  partition_offset=${p_offset}
+                else
+                  partition_offset=1048576
+                fi
+              fi
+              if [ "${p_offset}" != "${partition_offset}" ]; then
+                echo "Unexpected offset for partition ${p}, defined: ${p_offset}, expected: ${partition_offset}"
+                exit 1
+              else
+                echo "Validated offset for partition ${p}, offset: ${p_offset}"
+              fi
+              # calculate next offset
+              partition_offset=$((partition_offset+p_size))
+              unset p
+            fi
+          done
 
           cat << EOF > ${SNAPCRAFT_PART_INSTALL}/uc.lst
           uuu_version 1.4.69
@@ -282,7 +327,10 @@ parts:
           FB: flash bootloader  imx-boot.bin
 
           # create new partition table
-          FB: ucmd setenv partitions 'uuid_disk=\${uuid_gpt_disk};name=ubuntu-seed,size=${seed_size},start=${seed_offset},uuid=${seed_uuid}'
+          # boot critical partition number (used for u-boot build config)
+          # mmc_boot_part=${mmc_boot_part}
+          # mmc_seed_part=${mmc_seed_part}
+          FB: ucmd setenv partitions '${gtp_partitions}'
           FB: ucmd gpt write mmc \${emmc_dev} \${partitions}
 
           # force re-read partition table
