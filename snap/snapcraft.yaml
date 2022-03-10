@@ -239,7 +239,17 @@ parts:
         organize:
             flash.bin: blobs/imx-boot.bin
 
+    partioning-tool:
+        plugin: dump
+        source: https://github.com/kubiko/partitioning_tool.git
+        source-depth: 1
+        source-type: git
+        prime:
+            - -*
+
     flash-script: # uuu flash script
+        after:
+            - partioning-tool
         plugin: nil
         override-build: |
           # get seed offset and size from gadget yaml
@@ -255,7 +265,7 @@ parts:
 
           # read all the partitions before ubuntu-boot and include those in the created part table
           # additionally calculate part number for seed and boot, we need those for u-boot build
-          gtp_partitions="uuid_disk=\${uuid_gpt_disk}"
+          gtp_partitions=""
           part_number=0
           # this is good opportunity to validate offset of the partitions, if defined
           # it saves us from failed boot
@@ -279,9 +289,10 @@ parts:
               export p=${p}
               p_offset=$(yq eval '.volumes.[].structure.[] | select(.name == env(p)) | .offset' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
               p_size=$(yq eval '.volumes.[].structure.[] | select(.name == env(p)) | .size' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
-              p_uuid=$(yq eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+              p_type=$(yq eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
               p_size=$(convert_size ${p_size})
-              gtp_partitions="${gtp_partitions};name=${p},size=${p_size},start=${p_offset},uuid=${p_uuid}"
+              p_ksize=$(expr ${p_size} / 1024)
+              gtp_partitions[${part_number}]="    <partition label=\"${p}\" size_in_kb=\"${p_ksize}\" type=\"${p_type}\" bootable=\"false\" readonly=\"false\" filename=\"\" />"
               if [ "${partition_offset}" == "0" ]; then
                 # first partion, if there no offset defined, use default 1MB (1048576)
                 if [ -n "${p_offset}" ]; then
@@ -301,6 +312,28 @@ parts:
               unset p
             fi
           done
+
+          cat << EOF > partition.xml
+          <?xml version="1.0"?>
+
+          <configuration>
+            <parser_instructions>
+              <!-- NOTE: entries here are used by the parser when generating output -->
+              <!-- NOTE: each filename must be on it's own line as in variable=value-->
+              WRITE_PROTECT_BOUNDARY_IN_KB=0
+              SECTOR_SIZE_IN_BYTES = 512
+              GROW_LAST_PARTITION_TO_FILL_DISK=true
+              FIRST_SECTOR_OF_FIRST_PARTITION=20480
+            </parser_instructions>
+
+            <physical_partition>
+            $(printf '%s\n' "${gtp_partitions[@]}")
+            </physical_partition>
+          </configuration>
+          EOF
+
+          python3 ${SNAPCRAFT_STAGE}/ptool.py -x partition.xml -t .
+          cp gpt_both* ${SNAPCRAFT_PART_INSTALL}/
 
           cat << EOF > ${SNAPCRAFT_PART_INSTALL}/uc.lst
           uuu_version 1.4.69
@@ -334,24 +367,19 @@ parts:
           FB: ucmd mmc dev \${emmc_dev}
           FB: flash bootloader  imx-boot.bin
 
-          # create new partition table
           # boot critical partition number (used for u-boot build config)
           # mmc_boot_part=${mmc_boot_part}
           # mmc_seed_part=${mmc_seed_part}
-          FB: ucmd setenv partitions '${gtp_partitions}'
-          FB: ucmd gpt write mmc \${emmc_dev} \${partitions}
 
-          # force re-read partition table
-          FB: ucmd setenv mmcdev \${emmc_dev}
-          FB: ucmd setenv fastboot_dev mmc
-
+          # flash new partition table
+          FB: flash gpt gpt_both0.bin
           # Flashing partitions, use timeout 20s
           FB: ucmd echo "If ubuntu-seed partition does not exist, powercycle the device"
           FB[-t 20000]: flash ubuntu-seed ubuntu-seed.img
           FB: done
           EOF
         organize:
-            uc.lst: blobs/
+            '*': blobs/
         build-snaps:
             - yq
 
