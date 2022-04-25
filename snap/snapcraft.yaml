@@ -161,6 +161,18 @@ parts:
             export CROSS_COMPILE="aarch64-linux-gnu-"
             export CC="aarch64-linux-gnu-gcc"
             # TODO: export ARCH=arm64
+            echo "CONFIG_CMD_BOOTEFI_HELLO=y
+            CONFIG_CMD_BOOTEFI_SELFTEST=y
+            CONFIG_CMD_ENV_FLAGS=y
+            CONFIG_EFI_SECURE_BOOT=y
+            CONFIG_CMD_NVEDIT_EFI=y
+            CONFIG_CMD_NVEDIT_INFO=y
+            CONFIG_CMD_NVEDIT_LOAD=y
+            CONFIG_CMD_NVEDIT_SELECT=y
+            CONFIG_CMD_EFIDEBUG=y
+            CONFIG_EFI_LOADER_BOUNCE_BUFFER=y
+            CONFIG_PARTITION_TYPE_GUID=y
+            " >> configs/imx8mm_evk_defconfig
             make imx8mm_evk_config
             make -j$(nproc)
             cp u-boot.bin ${SNAPCRAFT_PART_INSTALL}/u-boot.bin
