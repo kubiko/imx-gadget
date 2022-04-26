@@ -148,12 +148,12 @@ parts:
         after:
             - pub-signing-key
         plugin: nil
-        source: https://source.codeaurora.org/external/imx/uboot-imx
+        source: https://github.com/u-boot/u-boot.git
         source-type: git
-        source-tag: lf-5.15.5-1.0.0
+        source-tag: master
         override-build: |
             # Patch needed for UC
-            patch -p1 -i "$SNAPCRAFT_PROJECT_DIR"/u-boot-patch/0001-efi_loader-set-partition-GUID-in-device-path-for-SIG.patch
+            #patch -p1 -i "$SNAPCRAFT_PROJECT_DIR"/u-boot-patch/0001-efi_loader-set-partition-GUID-in-device-path-for-SIG.patch
             # copy in place dtsi with pub part of kernel signing key
             cp ${SNAPCRAFT_STAGE}/u-boot-pubkey.dtsi \
                ${SNAPCRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi
@@ -174,6 +174,19 @@ parts:
             CONFIG_CMD_EFIDEBUG=y
             CONFIG_EFI_LOADER_BOUNCE_BUFFER=y
             CONFIG_PARTITION_TYPE_GUID=y
+
+            CONFIG_UDP_FUNCTION_FASTBOOT=y
+            CONFIG_FASTBOOT=y
+            CONFIG_USB_FUNCTION_FASTBOOT=y
+            CONFIG_ANDROID_BOOT_IMAGE=y
+            CONFIG_CMD_FASTBOOT=y
+            CONFIG_FASTBOOT_UUU_SUPPORT=y
+            CONFIG_FASTBOOT_BUF_ADDR=0x42800000
+            CONFIG_FASTBOOT_BUF_SIZE=0x40000000
+            CONFIG_FASTBOOT_FLASH=y
+            CONFIG_FASTBOOT_MMC_BOOT_SUPPORT=y
+            CONFIG_FASTBOOT_MMC_USER_SUPPORT=y
+            CONFIG_FASTBOOT_FLASH_MMC_DEV=2
             " >> configs/imx8mm_evk_defconfig
             make imx8mm_evk_config
             make -j$(nproc)
@@ -305,10 +318,12 @@ build-packages:
     - flex
     - gcc-aarch64-linux-gnu
     - libxml2-dev
+    - libpython3-dev
     - libssl-dev
     - python3
     - python3-cryptography
     - python3-pyelftools
     - python3-pycryptodome
+    - swig
     - wget
     - zlib1g-dev
