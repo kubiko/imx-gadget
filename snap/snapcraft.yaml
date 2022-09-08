@@ -430,3 +430,13 @@ package-repositories:
      suites: [noble, noble-updates, noble-backports]
      key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
      url: http://ports.ubuntu.com/ubuntu-ports
+
+slots:
+  tee-plugins:
+    interface: content
+    write:
+      - $SNAP_COMMON/usr/lib/tee-supplicant/plugins
+  tee-tas:
+    interface: content
+    write:
+      - $SNAP_COMMON/lib/optee_armtz
