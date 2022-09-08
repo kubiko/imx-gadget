@@ -23,6 +23,7 @@ apps:
   tee-supplicant:
     command: usr/sbin/tee-supplicant --fs-parent-path SNAP_COMMON/tee-storage --ta-path $SNAP_COMMON/lib/optee_armtz --plugin-path $SNAP_COMMON/usr/lib/tee-supplicant/plugins
     daemon: simple
+    install-mode: disable
     plugs:
       - network-bind
       - tee
@@ -33,6 +34,7 @@ apps:
     daemon: forking
     after:
       - tee-supplicant
+    install-mode: disable
     plugs:
       - tee
     slots:
