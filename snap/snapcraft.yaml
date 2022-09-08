@@ -408,3 +408,12 @@ slots:
     interface: content
     write:
       - $SNAP_COMMON/lib/optee_armtz
+  pkcs11-optee-slot-0:
+    interface: pkcs11
+    pkcs11-socket: /run/p11-kit/optee-slot-0
+  pkcs11-optee-slot-1:
+    interface: pkcs11
+    pkcs11-socket: /run/p11-kit/optee-slot-1
+  pkcs11-optee-slot-2:
+    interface: pkcs11
+    pkcs11-socket: /run/p11-kit/optee-slot-2
