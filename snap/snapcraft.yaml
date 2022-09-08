@@ -385,3 +385,13 @@ build-packages:
   - on arm64:
     - gcc
     - uuid-dev
+
+slots:
+  tee-plugins:
+    interface: content
+    write:
+      - $SNAP_COMMON/usr/lib/tee-supplicant/plugins
+  tee-tas:
+    interface: content
+    write:
+      - $SNAP_COMMON/lib/optee_armtz
