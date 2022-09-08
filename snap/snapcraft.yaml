@@ -365,6 +365,19 @@ parts:
     build-snaps:
       - yq
 
+  p11-kit-helpers:
+    plugin: nil
+    override-build: |
+      install -D -m 755 \
+      ${CRAFT_PROJECT_DIR}/p11-kit-servers \
+      ${CRAFT_PART_INSTALL}/usr/bin/p11-kit-servers
+      install -D -m 755 \
+      ${CRAFT_PROJECT_DIR}/p11tool \
+      ${CRAFT_PART_INSTALL}/usr/bin/p11tool
+      install -D -m 755 \
+      ${CRAFT_PROJECT_DIR}/pkcs11-tool \
+      ${CRAFT_PART_INSTALL}/usr/bin/pkcs11-tool
+
 build-packages:
   - bison
   - build-essential
