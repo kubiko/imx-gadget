@@ -1,0 +1,4 @@
+#!/bin/sh
+
+# shellcheck disable=SC2068 # SC2068 does not apply, we want to treat @ it as array
+exec /usr/bin/p11tool ${@}
