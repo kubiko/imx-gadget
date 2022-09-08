@@ -400,6 +400,12 @@ parts:
     build-snaps:
       - yq
 
+  p11-kit-helpers:
+    plugin: dump
+    source: p11-kit-helpers
+    organize :
+      '*': usr/bin/
+
 build-packages:
   - bison
   - build-essential
