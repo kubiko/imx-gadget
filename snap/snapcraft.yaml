@@ -27,6 +27,17 @@ apps:
       - network-bind
       - tee
 
+  p11-kit-servers:
+    command: usr/bin/p11-kit-servers start
+    stop-command: usr/bin/p11-kit-servers stop
+    daemon: forking
+    plugs:
+      - tee
+    slots:
+      - pkcs11-optee-slot-0
+      - pkcs11-optee-slot-1
+      - pkcs11-optee-slot-2
+
 parts:
   arm-trusted-firmware:
     plugin: nil
