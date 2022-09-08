@@ -1,0 +1,15 @@
+#!/bin/sh
+
+# setup mount
+snapctl mount \
+        --persistent \
+        -t ext4 \
+        -o rw \
+        "/dev/disk/by-partlabel/tee-storage" \
+        "${SNAP_COMMON}/tee-storage"
+
+# if tee is connected, enable services
+if snapctl is-connected tee; then
+  snapctl start --enable "${SNAP_INSTANCE_NAME}.tee-supplicant"
+  snapctl start --enable "${SNAP_INSTANCE_NAME}.p11-kit-servers"
+fi
