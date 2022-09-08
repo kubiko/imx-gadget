@@ -38,6 +38,20 @@ apps:
       - pkcs11-optee-slot-1
       - pkcs11-optee-slot-2
 
+  p11tool-optee:
+    command: usr/bin/p11tool --provider $SNAP/usr/lib/aarch64-linux-gnu/libckteec.so
+    plugs:
+      - home
+      - tee
+      - pkcs11
+
+  pkcs11-tool-optee:
+    command: usr/bin/pkcs11-tool --module $SNAP/usr/lib/aarch64-linux-gnu/libckteec.so
+    plugs:
+      - home
+      - tee
+      - pkcs11
+
 parts:
   arm-trusted-firmware:
     plugin: nil
