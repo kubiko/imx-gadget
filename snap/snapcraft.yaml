@@ -376,3 +376,13 @@ build-packages:
     - gcc-aarch64-linux-gnu
   - on arm64:
     - gcc
+
+slots:
+  tee-plugins:
+    interface: content
+    write:
+      - $SNAP_COMMON/usr/lib/tee-supplicant/plugins
+  tee-tas:
+    interface: content
+    write:
+      - $SNAP_COMMON/lib/optee_armtz
