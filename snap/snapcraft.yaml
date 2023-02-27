@@ -248,9 +248,9 @@ parts:
     source-tag: lf-6.1.36-2.1.0
     source-depth: 1
     override-build: |
-      platform="imx8mm"
+      platform="imx8mp"
       # firmware files
-      for ddr_firmware in lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train_1d_dmem.bin lpddr4_pmu_train_2d_imem.bin lpddr4_pmu_train_2d_dmem.bin; do
+      for ddr_firmware in lpddr4_pmu_train_1d_imem_202006.bin lpddr4_pmu_train_1d_dmem_202006.bin lpddr4_pmu_train_2d_imem_202006.bin lpddr4_pmu_train_2d_dmem_202006.bin; do
         cp ${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware} iMX8M
       done
       cp ${CRAFT_STAGE}/firmware/hdmi/cadence/signed_dp_imx8m.bin iMX8M
@@ -266,7 +266,7 @@ parts:
       cp ${CRAFT_STAGE}/imx-boot-tools/${platform}-evk.dtb iMX8M
       # setup link to mkimage_uboot
       ln -sf ${CRAFT_STAGE}/mkimage iMX8M/mkimage_uboot
-      make SOC=iMX8MM flash_evk
+      make SOC=iMX8MP flash_evk
       cp iMX8M/flash.bin ${CRAFT_PART_INSTALL}/
     organize:
       flash.bin: blobs/imx-boot.bin
