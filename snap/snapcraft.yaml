@@ -204,7 +204,7 @@ parts:
       head=$(git rev-parse --verify --short HEAD 2> /dev/null)
       imx_version=$(git describe --tags | cut -c 4-)
       printf "%s%s%s" "-${imx_version}" "+g" "${head}" > .scmversion
-      make imx8mm_evk_config
+      make imx8mp_evk_config
       sed -i 's/CONFIG_BOOTARGS=.*/CONFIG_BOOTARGS="dangerous fde_helper=enabled"/g' .config
       make -j$(nproc)
       cp u-boot.bin ${CRAFT_PART_INSTALL}/u-boot.bin
@@ -212,7 +212,7 @@ parts:
       mkdir -p ${CRAFT_PART_INSTALL}/imx-boot-tools
       cp u-boot-nodtb.bin ${CRAFT_PART_INSTALL}/imx-boot-tools
       cp u-boot.dtb \
-         ${CRAFT_PART_INSTALL}/imx-boot-tools/imx8mm-evk.dtb
+         ${CRAFT_PART_INSTALL}/imx-boot-tools/imx8mp-evk.dtb
       # copy tools/mkimage tool for imx-boot stage
       cp tools/mkimage ${CRAFT_PART_INSTALL}
       tools/mkenvimage -r -s 4096 -o ${CRAFT_PART_INSTALL}/boot.sel - < /dev/null
