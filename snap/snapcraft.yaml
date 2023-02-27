@@ -62,7 +62,7 @@ parts:
     source-tag: lf-6.6.52-2.2.0
     source-depth: 1
     build-environment:
-      - PLAT: "imx8mm"
+      - PLAT: "imx8mp"
       - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
     override-build: |
       make \
