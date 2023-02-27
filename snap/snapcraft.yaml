@@ -280,13 +280,13 @@ parts:
     source-tag: lf-6.12.49-2.2.0
     source-depth: 1
     override-build: |
-      platform="imx8mm"
+      platform="imx8mp"
       soc_family="iMX8M"
       # firmware files
-      for ddr_firmware in lpddr4_pmu_train_1d_imem.bin \
-                          lpddr4_pmu_train_1d_dmem.bin \
-                          lpddr4_pmu_train_2d_imem.bin \
-                          lpddr4_pmu_train_2d_dmem.bin
+      for ddr_firmware in lpddr4_pmu_train_1d_imem_202006.bin \
+                          lpddr4_pmu_train_1d_dmem_202006.bin \
+                          lpddr4_pmu_train_2d_imem_202006.bin \
+                          lpddr4_pmu_train_2d_dmem_202006.bin
       do
         cp -f "${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware}" \
               "${CRAFT_PART_BUILD}/${soc_family}"
@@ -315,7 +315,7 @@ parts:
 
       # setup link to mkimage_uboot
       ln -sf "${CRAFT_STAGE}/mkimage" "${soc_family}/mkimage_uboot"
-      make SOC=iMX8MM flash_evk
+      make SOC=iMX8MP flash_evk
 
       install -m 644 -D "${CRAFT_PART_BUILD}/${soc_family}/flash.bin" \
                         "${CRAFT_PART_INSTALL}/blobs/imx-boot.bin"
