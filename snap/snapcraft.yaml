@@ -3,20 +3,20 @@ summary: NXP i.MX8M Mini EVK support package
 description: |
  Support files for booting i.MX8M Mini EVK board
 
-version: 22-1-6.6.52-2.2.0
+version: 20-1-6.6.52-2.2.0
 type: gadget
 
-base: core22
+base: core20
 
 architectures:
   - build-on: [amd64, arm64]
-    build-for: arm64
+    run-on: arm64
 
 confinement: strict
 grade: stable
 
 environment:
-  LD_LIBRARY_PATH: ${SNAP}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+  LD_LIBRARY_PATH: ${SNAP}/usr/lib/${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}
   PATH: ${SNAP}/bin:${PATH}
 
 apps:
@@ -63,23 +63,23 @@ parts:
     source-depth: 1
     build-environment:
       - PLAT: "imx8mm"
-      - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CROSS_COMPILE: "${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}-"
     override-build: |
       make \
         PLAT=${PLAT} \
-        BUILD_BASE=${CRAFT_PART_BUILD}/build \
+        BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build \
         bl31 \
         -j$(nproc)
       make \
         PLAT=${PLAT} \
-        BUILD_BASE=${CRAFT_PART_BUILD}/build-optee \
+        BUILD_BASE=${SNAPCRAFT_PART_BUILD}/build-optee \
         SPD=opteed \
         bl31 \
         -j$(nproc)
-      cp ${CRAFT_PART_BUILD}/build/${PLAT}/release/bl31.bin \
-         ${CRAFT_PART_INSTALL}/bl31-${PLAT}.bin
-      cp ${CRAFT_PART_BUILD}/build-optee/${PLAT}/release/bl31.bin \
-         ${CRAFT_PART_INSTALL}/bl31-${PLAT}.bin-optee
+      cp ${SNAPCRAFT_PART_BUILD}/build/${PLAT}/release/bl31.bin \
+         ${SNAPCRAFT_PART_INSTALL}/bl31-${PLAT}.bin
+      cp ${SNAPCRAFT_PART_BUILD}/build-optee/${PLAT}/release/bl31.bin \
+         ${SNAPCRAFT_PART_INSTALL}/bl31-${PLAT}.bin-optee
     prime:
       - -*
 
@@ -104,9 +104,9 @@ parts:
     source-depth: 1
     build-environment:
       - ARCH: "arm"
-      - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
-      - CROSS_COMPILE_core: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
-      - CROSS_COMPILE_ta_arm64: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CROSS_COMPILE: "${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CROSS_COMPILE_core: "${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CROSS_COMPILE_ta_arm64: "${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}-"
       - CFG_ARM64_core: "y"
       - CFG_USER_TA_TARGETS: "ta_arm64"
       - CFG_TEE_CORE_LOG_LEVEL: "1"
@@ -116,28 +116,28 @@ parts:
       - CFG_TEE_RAM_VA_SIZE: "0x00280000"
       - CFG_CORE_HEAP_SIZE: "0x00100000"
       - DEBUG: "1"
-      - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
+      - TA_PUBLIC_KEY: "${SNAPCRAFT_STAGE}/ta-keys/ta_public.pem"
       - PLATFORM: "imx"
       - PLATFORM_FLAVOR: "mx8mmevk"
       - PYTHON: "/usr/bin/python3"
       - PYTHONHOME: "/usr"
-      - PYTHONPATH: "/usr/lib/python3.11:/usr/lib/python3.11/lib-dynload:/usr/lib/python3/dist-packages"
+      - PYTHONPATH: "/usr/lib/python3.9:/usr/lib/python3.9/lib-dynload:/usr/lib/python3/dist-packages"
       - PYTHONIOENCODING: utf-8
     override-build: |
       # add optee-fde TA
-      cp -r ${CRAFT_STAGE}/optee-fde/ta/fde_key_handler ${CRAFT_PART_BUILD}/ta/
+      cp -r ${SNAPCRAFT_STAGE}/optee-fde/ta/fde_key_handler ${SNAPCRAFT_PART_BUILD}/ta/
       export OPTEE_VERSION=$(head -1 CHANGELOG.md  | sed 's/# OP-TEE - version \(.*\) (.*/\1/g')-imx
-      make O=${CRAFT_PART_BUILD}/out -j$(nproc)
+      make O=${SNAPCRAFT_PART_BUILD}/out -j$(nproc)
       # build again with early TAs
-      make O=${CRAFT_PART_BUILD}/out -j$(nproc) \
+      make O=${SNAPCRAFT_PART_BUILD}/out -j$(nproc) \
          CFG_EARLY_TA=y \
          EARLY_TA_PATHS="out/ta/pkcs11/fd02c9da-306c-48c7-a49c-bbd827ae86ee.stripped.elf \
                  out/ta/trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c.stripped.elf \
                  out/ta/fde_key_handler/fd1b2a86-3668-11eb-adc1-0242ac120002.stripped.elf"
-      ${CRAFT_ARCH_TRIPLET_BUILD_FOR}-objcopy \
+      ${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}-objcopy \
          -O binary \
-         ${CRAFT_PART_BUILD}/out/core/tee.elf \
-         ${CRAFT_PART_INSTALL}/tee.bin
+         ${SNAPCRAFT_PART_BUILD}/out/core/tee.elf \
+         ${SNAPCRAFT_PART_INSTALL}/tee.bin
     prime:
       - -*
 
@@ -150,12 +150,12 @@ parts:
     make-parameters:
       - ARCH="arm64"
       - DEBUG=0
-      - CROSS_COMPILE="${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CROSS_COMPILE="${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}-"
       - CFG_TEE_CLIENT_LOAD_PATH="/"
       - CFG_TA_TEST_PATH=n
       - CFG_TEE_SUPP_LOG_LEVEL=0
       - SBINDIR=/usr/sbin
-      - LIBDIR=/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+      - LIBDIR=/usr/lib/${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}
       - PKG_CONFIG=pkg-config
     stage:
       - usr/sbin
@@ -191,35 +191,35 @@ parts:
     source-tag: lf-6.6.52-2.2.0-uc
     source-depth: 1
     build-environment:
-      - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
-      - CC: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc"
+      - CROSS_COMPILE: "${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - CC: "${SNAPCRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc"
     override-build: |
       # copy in place dtsi with pub part of kernel signing key
-      cp ${CRAFT_STAGE}/u-boot-pubkey.dtsi \
-         ${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi
+      cp ${SNAPCRAFT_STAGE}/u-boot-pubkey.dtsi \
+         ${SNAPCRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi
       # update mmc_seed_part and mmc_boot_part from uc.lst
-      mmc_seed_part="$(grep mmc_seed_part ${CRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
-      mmc_boot_part="$(grep mmc_boot_part ${CRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
+      mmc_seed_part="$(grep mmc_seed_part ${SNAPCRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
+      mmc_boot_part="$(grep mmc_boot_part ${SNAPCRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
       sed -i \
          -e 's/mmc_seed_part=\(.*\)\\0"/'"${mmc_seed_part}"'\\0"/g' \
          -e 's/mmc_boot_part=\(.*\)\\0"/'"${mmc_boot_part}"'\\0"/g' \
-         ${CRAFT_PART_BUILD}/include/configs/*.h
+         ${SNAPCRAFT_PART_BUILD}/include/configs/*.h
       # Add GIT revision to the local version
       head=$(git rev-parse --verify --short HEAD 2> /dev/null)
       imx_version=$(git describe --tags | cut -c 4-)
       printf "%s%s%s" "-${imx_version}" "+g" "${head}" > .scmversion
       make imx8mm_evk_config
       make -j$(nproc)
-      cp u-boot.bin ${CRAFT_PART_INSTALL}/u-boot.bin
-      cp spl/u-boot-spl.bin ${CRAFT_PART_INSTALL}/u-boot-spl.bin
-      mkdir -p ${CRAFT_PART_INSTALL}/imx-boot-tools
-      cp u-boot-nodtb.bin ${CRAFT_PART_INSTALL}/imx-boot-tools
+      cp u-boot.bin ${SNAPCRAFT_PART_INSTALL}/u-boot.bin
+      cp spl/u-boot-spl.bin ${SNAPCRAFT_PART_INSTALL}/u-boot-spl.bin
+      mkdir -p ${SNAPCRAFT_PART_INSTALL}/imx-boot-tools
+      cp u-boot-nodtb.bin ${SNAPCRAFT_PART_INSTALL}/imx-boot-tools
       cp u-boot.dtb \
-         ${CRAFT_PART_INSTALL}/imx-boot-tools/imx8mm-evk.dtb
+         ${SNAPCRAFT_PART_INSTALL}/imx-boot-tools/imx8mm-evk.dtb
       # copy tools/mkimage tool for imx-boot stage
-      cp tools/mkimage ${CRAFT_PART_INSTALL}
-      tools/mkenvimage -r -s 4096 -o ${CRAFT_PART_INSTALL}/boot.sel - < /dev/null
-      touch ${CRAFT_PART_INSTALL}/uboot.conf
+      cp tools/mkimage ${SNAPCRAFT_PART_INSTALL}
+      tools/mkenvimage -r -s 4096 -o ${SNAPCRAFT_PART_INSTALL}/boot.sel - < /dev/null
+      touch ${SNAPCRAFT_PART_INSTALL}/uboot.conf
     prime:
       - boot.sel
       - uboot.conf
@@ -235,7 +235,7 @@ parts:
     override-build: |
       chmod +x firmware-imx.bin
       ./firmware-imx.bin --force --auto-accept
-      cp -r firmware-imx-*/firmware ${CRAFT_PART_INSTALL}
+      cp -r firmware-imx-*/firmware ${SNAPCRAFT_PART_INSTALL}
     prime:
       - -*
 
@@ -254,23 +254,23 @@ parts:
       platform="imx8mm"
       # firmware files
       for ddr_firmware in lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train_1d_dmem.bin lpddr4_pmu_train_2d_imem.bin lpddr4_pmu_train_2d_dmem.bin; do
-        cp ${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware} iMX8M
+        cp ${SNAPCRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware} iMX8M
       done
-      cp ${CRAFT_STAGE}/firmware/hdmi/cadence/signed_dp_imx8m.bin iMX8M
-      cp ${CRAFT_STAGE}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin iMX8M
+      cp ${SNAPCRAFT_STAGE}/firmware/hdmi/cadence/signed_dp_imx8m.bin iMX8M
+      cp ${SNAPCRAFT_STAGE}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin iMX8M
       # atf
-      cp ${CRAFT_STAGE}/bl31-${platform}.bin-optee iMX8M/bl31.bin
+      cp ${SNAPCRAFT_STAGE}/bl31-${platform}.bin-optee iMX8M/bl31.bin
       # optee
-      cp ${CRAFT_STAGE}/tee.bin iMX8M
+      cp ${SNAPCRAFT_STAGE}/tee.bin iMX8M
       # u-boot
-      cp ${CRAFT_STAGE}/u-boot.bin iMX8M
-      cp ${CRAFT_STAGE}/u-boot-spl.bin iMX8M
-      cp ${CRAFT_STAGE}/imx-boot-tools/u-boot-nodtb.bin iMX8M
-      cp ${CRAFT_STAGE}/imx-boot-tools/${platform}-evk.dtb iMX8M
+      cp ${SNAPCRAFT_STAGE}/u-boot.bin iMX8M
+      cp ${SNAPCRAFT_STAGE}/u-boot-spl.bin iMX8M
+      cp ${SNAPCRAFT_STAGE}/imx-boot-tools/u-boot-nodtb.bin iMX8M
+      cp ${SNAPCRAFT_STAGE}/imx-boot-tools/${platform}-evk.dtb iMX8M
       # setup link to mkimage_uboot
-      ln -sf ${CRAFT_STAGE}/mkimage iMX8M/mkimage_uboot
+      ln -sf ${SNAPCRAFT_STAGE}/mkimage iMX8M/mkimage_uboot
       make SOC=iMX8MM flash_evk
-      cp iMX8M/flash.bin ${CRAFT_PART_INSTALL}/
+      cp iMX8M/flash.bin ${SNAPCRAFT_PART_INSTALL}/
     organize:
       flash.bin: blobs/imx-boot.bin
 
@@ -289,7 +289,7 @@ parts:
       }
 
       # avoid confinement for yq as we might run as root
-      yq="/snap/yq/current/bin/yq"
+      yq="yq"
       # read all the partitions before ubuntu-boot and include those in the created part table
       # additionally calculate part number for seed and boot, we need those for u-boot build
       gpt_partitions="uuid_disk=\${uuid_gpt_disk}"
@@ -299,7 +299,7 @@ parts:
       # default 1st partition offset is 1MB, unless defined otherwise
       partition_offset=0
       unset mmc_boot_part mmc_seed_part
-      for p in $(${yq} eval '.volumes.[].structure.[].name' ${CRAFT_PROJECT_DIR}/gadget.yaml)
+      for p in $(${yq} eval '.volumes.[].structure.[].name' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
       do
       # ignore bare structures
       if [ "${p}" != "null" ]; then
@@ -314,9 +314,9 @@ parts:
 
         # include partitions in the list
         export p=${p}
-        p_offset=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .offset' ${CRAFT_PROJECT_DIR}/gadget.yaml)
-        p_size=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .size' ${CRAFT_PROJECT_DIR}/gadget.yaml)
-        p_type=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' ${CRAFT_PROJECT_DIR}/gadget.yaml)
+        p_offset=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .offset' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+        p_size=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .size' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
+        p_type=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' ${SNAPCRAFT_PROJECT_DIR}/gadget.yaml)
         p_size=$(convert_size ${p_size})
         gpt_partitions="${gpt_partitions};name=${p},size=${p_size},start=${p_offset},type=${p_type}"
         if [ "${partition_offset}" == "0" ]; then
@@ -339,7 +339,7 @@ parts:
       fi
       done
 
-      cat << EOF > ${CRAFT_PART_INSTALL}/uc.lst
+      cat << EOF > ${SNAPCRAFT_PART_INSTALL}/uc.lst
       uuu_version 1.4.69
 
       # This command will be run when i.MX6/7 i.MX8MM, i.MX8MQ
@@ -396,14 +396,14 @@ parts:
     plugin: nil
     override-build: |
       install -D -m 755 \
-      ${CRAFT_PROJECT_DIR}/p11-kit-servers \
-      ${CRAFT_PART_INSTALL}/usr/bin/p11-kit-servers
+      ${SNAPCRAFT_PROJECT_DIR}/p11-kit-servers \
+      ${SNAPCRAFT_PART_INSTALL}/usr/bin/p11-kit-servers
       install -D -m 755 \
-      ${CRAFT_PROJECT_DIR}/p11tool \
-      ${CRAFT_PART_INSTALL}/usr/bin/p11tool
+      ${SNAPCRAFT_PROJECT_DIR}/p11tool \
+      ${SNAPCRAFT_PART_INSTALL}/usr/bin/p11tool
       install -D -m 755 \
-      ${CRAFT_PROJECT_DIR}/pkcs11-tool \
-      ${CRAFT_PART_INSTALL}/usr/bin/pkcs11-tool
+      ${SNAPCRAFT_PROJECT_DIR}/pkcs11-tool \
+      ${SNAPCRAFT_PART_INSTALL}/usr/bin/pkcs11-tool
 
 build-packages:
   - bison
