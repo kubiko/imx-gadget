@@ -119,7 +119,7 @@ parts:
       - DEBUG: "1"
       - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
       - PLATFORM: "imx"
-      - PLATFORM_FLAVOR: "mx8mmevk"
+      - PLATFORM_FLAVOR: "mx8mpevk"
     override-build: |
       # add optee-fde TA
       cp -r ${CRAFT_STAGE}/optee-fde/ta/fde_key_handler ${CRAFT_PART_BUILD}/ta/
