@@ -118,7 +118,7 @@ parts:
       - DEBUG: "1"
       - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
       - PLATFORM: "imx"
-      - PLATFORM_FLAVOR: "mx8mmevk"
+      - PLATFORM_FLAVOR: "mx8mpevk"
       - PYTHON: "/usr/bin/python3"
       - PYTHONHOME: "/usr"
       - PYTHONPATH: "/usr/lib/python3.11:/usr/lib/python3.11/lib-dynload:/usr/lib/python3/dist-packages"
