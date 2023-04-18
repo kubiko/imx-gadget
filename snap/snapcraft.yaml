@@ -129,7 +129,7 @@ parts:
       - CROSS_COMPILE_ta_arm64: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
       - DEBUG: "0"
       - PLATFORM: "imx"
-      - PLATFORM_FLAVOR: "mx8mmevk"
+      - PLATFORM_FLAVOR: "mx8mpevk"
       - PYTHON: "/usr/bin/python3"
       - PYTHONHOME: "/usr"
       - PYTHON_VERSION: $(python3 -c 'import sysconfig; print(sysconfig.get_python_version())')
