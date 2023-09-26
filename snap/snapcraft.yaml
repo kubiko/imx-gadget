@@ -3,13 +3,14 @@ summary: NXP i.MX8M Mini EVK support package
 description: |
  Support files for booting i.MX8M Mini EVK board
 
-version: 22-2-2.2.0
+version: 24-1-2.2.0
 type: gadget
 
-base: core22
+base: core24
 
-architectures:
-  - build-on: [amd64, arm64]
+platforms:
+  arm64:
+    build-on: [amd64, arm64]
     build-for: arm64
 
 confinement: strict
@@ -122,7 +123,7 @@ parts:
       - PLATFORM_FLAVOR: "mx8mmevk"
       - PYTHON: "/usr/bin/python3"
       - PYTHONHOME: "/usr"
-      - PYTHONPATH: "/usr/lib/python3.11:/usr/lib/python3.11/lib-dynload:/usr/lib/python3/dist-packages"
+      - PYTHONPATH: "/usr/lib/python3.12:/usr/lib/python3.12/lib-dynload:/usr/lib/python3/dist-packages"
       - PYTHONIOENCODING: utf-8
       - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
     override-build: |
