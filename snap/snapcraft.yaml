@@ -116,7 +116,7 @@ parts:
       - CFG_TEE_BENCHMARK: "n"
       - CFG_TEE_RAM_VA_SIZE: "0x00280000"
       - CFG_CORE_HEAP_SIZE: "0x00100000"
-      - DEBUG: "0"
+      - DEBUG: "1"
       - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
       - PLATFORM: "imx"
       - PLATFORM_FLAVOR: "mx8mmevk"
