@@ -249,6 +249,7 @@ parts:
     after:
       - arm-trusted-firmware
       - imx-firmware
+      - imx-firmware-ele
       - optee-os
       - u-boot
     plugin: nil
@@ -257,28 +258,22 @@ parts:
     source-tag: lf-6.6.52-2.2.0
     source-depth: 1
     override-build: |
-      platform="imx8mm"
+      platform="imx93"
       # firmware files
-      for ddr_firmware in lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train_1d_dmem.bin lpddr4_pmu_train_2d_imem.bin lpddr4_pmu_train_2d_dmem.bin; do
-        cp ${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware} iMX8M
+      for ddr_firmware in lpddr4_imem_1d_v202201.bin  lpddr4_dmem_1d_v202201.bin  lpddr4_imem_2d_v202201.bin lpddr4_dmem_2d_v202201.bin; do
+        cp ${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware} iMX93
       done
-      cp ${CRAFT_STAGE}/firmware/hdmi/cadence/signed_dp_imx8m.bin iMX8M
-      cp ${CRAFT_STAGE}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin iMX8M
       # atf
-      cp ${CRAFT_STAGE}/bl31-${platform}.bin-optee iMX8M/bl31.bin
+      cp ${CRAFT_STAGE}/bl31-${platform}.bin-optee iMX93/bl31.bin
       # optee
-      cp ${CRAFT_STAGE}/tee.bin iMX8M
+      cp ${CRAFT_STAGE}/tee.bin iMX93
       # u-boot
-      cp ${CRAFT_STAGE}/u-boot.bin iMX8M
-      cp ${CRAFT_STAGE}/u-boot-spl.bin iMX8M
-      cp ${CRAFT_STAGE}/imx-boot-tools/u-boot-nodtb.bin iMX8M
-      cp ${CRAFT_STAGE}/imx-boot-tools/${platform}-evk.dtb iMX8M
-      # setup link to mkimage_uboot
-      ln -sf ${CRAFT_STAGE}/mkimage iMX8M/mkimage_uboot
-      make SOC=iMX8MM flash_evk
-      cp iMX8M/flash.bin ${CRAFT_PART_INSTALL}/
-    organize:
-      flash.bin: blobs/imx-boot.bin
+      cp ${CRAFT_STAGE}/u-boot.bin iMX93
+      cp ${CRAFT_STAGE}/u-boot-spl.bin iMX93
+      # ele firmware
+      cp ${CRAFT_STAGE}/mx93a1-ahab-container.img iMX93
+      make SOC=iMX9 REV=A1 TEE=tee.bin dtbs=imx93-11x11-evk.dtb flash_singleboot
+      install -m 644 -D iMX93/flash.bin ${CRAFT_PART_INSTALL}/blobs/imx-boot.bin
 
   flash-script: # uuu flash script
     plugin: nil
