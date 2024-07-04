@@ -63,7 +63,7 @@ parts:
     source-tag: lf-6.6.52-2.2.0
     source-depth: 1
     build-environment:
-      - PLAT: "imx8mm"
+      - PLAT: "imx93"
       - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
     override-build: |
       make \
@@ -135,10 +135,7 @@ parts:
          EARLY_TA_PATHS="out/ta/pkcs11/fd02c9da-306c-48c7-a49c-bbd827ae86ee.stripped.elf \
                  out/ta/trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c.stripped.elf \
                  out/ta/fde_key_handler/fd1b2a86-3668-11eb-adc1-0242ac120002.stripped.elf"
-      ${CRAFT_ARCH_TRIPLET_BUILD_FOR}-objcopy \
-         -O binary \
-         ${CRAFT_PART_BUILD}/out/core/tee.elf \
-         ${CRAFT_PART_INSTALL}/tee.bin
+      cp -l ${CRAFT_PART_BUILD}/out/core/tee-raw.bin ${CRAFT_PART_INSTALL}/tee.bin
     prime:
       - -*
 
