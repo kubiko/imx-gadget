@@ -204,26 +204,20 @@ parts:
       sed -i \
           -e 's/mmc_seed_part=\(.*\)/'"${mmc_seed_part}"'/g' \
           -e 's/mmc_boot_part=\(.*\)/'"${mmc_boot_part}"'/g' \
-          "${CRAFT_PART_BUILD}/board/freescale/imx8mm_evk/imx8mm_evk.env"
+          "${CRAFT_PART_BUILD}/board/freescale/imx93_evk/imx93_evk.env"
 
       # Add GIT revision to the local version
       head=$(git rev-parse --verify --short HEAD 2> /dev/null)
       imx_version=$(git describe --tags | cut -c 4-)
       printf "%s%s%s" "-${imx_version}" "+g" "${head}" > .scmversion
 
-      make imx8mm_evk_config
+      make imx93_11x11_evk_defconfig
       make -j${CRAFT_PARALLEL_BUILD_COUNT}
 
       cp -f "${CRAFT_PART_BUILD}/u-boot.bin" \
             "${CRAFT_PART_INSTALL}/u-boot.bin"
       cp -f "${CRAFT_PART_BUILD}/spl/u-boot-spl.bin" \
             "${CRAFT_PART_INSTALL}/u-boot-spl.bin"
-
-      mkdir -p "${CRAFT_PART_INSTALL}/imx-boot-tools"
-      cp -f "${CRAFT_PART_BUILD}/u-boot-nodtb.bin" \
-            "${CRAFT_PART_INSTALL}/imx-boot-tools"
-      cp -f "${CRAFT_PART_BUILD}/u-boot.dtb" \
-            "${CRAFT_PART_INSTALL}/imx-boot-tools/imx8mm-evk.dtb"
 
       # copy tools/mkimage tool for imx-boot stage
       cp -f "${CRAFT_PART_BUILD}/tools/mkimage" \
