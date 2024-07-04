@@ -119,7 +119,7 @@ parts:
       - DEBUG: "1"
       - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
       - PLATFORM: "imx"
-      - PLATFORM_FLAVOR: "mx8mmevk"
+      - PLATFORM_FLAVOR: "mx93evk"
       - PYTHON: "/usr/bin/python3"
       - PYTHONHOME: "/usr"
       - PYTHONPATH: "/usr/lib/python3.12:/usr/lib/python3.12/lib-dynload:/usr/lib/python3/dist-packages"
@@ -133,7 +133,6 @@ parts:
       make O=${CRAFT_PART_BUILD}/out -j$(nproc) \
          CFG_EARLY_TA=y \
          EARLY_TA_PATHS="out/ta/pkcs11/fd02c9da-306c-48c7-a49c-bbd827ae86ee.stripped.elf \
-                 out/ta/trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c.stripped.elf \
                  out/ta/fde_key_handler/fd1b2a86-3668-11eb-adc1-0242ac120002.stripped.elf"
       cp -l ${CRAFT_PART_BUILD}/out/core/tee-raw.bin ${CRAFT_PART_INSTALL}/tee.bin
     prime:
