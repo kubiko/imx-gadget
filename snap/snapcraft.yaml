@@ -1,7 +1,7 @@
-name: imx93-evk
-summary: NXP i.MX93 evk support package
+name: imx93-qsb
+summary: NXP i.MX93 QSB board
 description: |
- Support files for booting i.MX93 evk board
+ Support files for booting i.MX93 QSB board
 
 version: 24-5-6.12.34-2.1.0
 type: gadget
