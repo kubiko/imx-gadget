@@ -1,6 +1,6 @@
 # i.MX93 evk Gadget Snap
 
-This repository contains the Ubuntu Core gadget snap for the i.MX93 Eval Kit
+This repository contains the Ubuntu Core gadget snap for the i.MX93 QSB baord
 
 ## Gadget Snaps
 
