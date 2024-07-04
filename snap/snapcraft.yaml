@@ -1,7 +1,7 @@
-name: imx8mm-evk
-summary: NXP i.MX8M Mini EVK support package
+name: imx93-evk
+summary: NXP i.MX93 EVK support package
 description: |
- Support files for booting i.MX8M Mini EVK board
+ Support files for booting i.MX93 Mini EVK board
 
 version: 24-1-6.6.52-2.2.0
 type: gadget
