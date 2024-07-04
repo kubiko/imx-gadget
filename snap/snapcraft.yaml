@@ -275,6 +275,7 @@ parts:
     after:
       - arm-trusted-firmware
       - imx-firmware
+      - imx-firmware-ele
       - optee-os
       - u-boot
     plugin: nil
@@ -283,21 +284,20 @@ parts:
     source-tag: lf-6.12.34-2.1.0
     source-depth: 1
     override-build: |
-      platform="imx8mm"
-      soc_family="iMX8M"
+      platform="imx93"
+      soc_family="iMX93"
       # firmware files
-      for ddr_firmware in lpddr4_pmu_train_1d_imem.bin \
-                          lpddr4_pmu_train_1d_dmem.bin \
-                          lpddr4_pmu_train_2d_imem.bin \
-                          lpddr4_pmu_train_2d_dmem.bin
+      for ddr_firmware in lpddr4_imem_1d_v202201.bin \
+                          lpddr4_dmem_1d_v202201.bin \
+                          lpddr4_imem_2d_v202201.bin \
+                          lpddr4_dmem_2d_v202201.bin
       do
         cp -f "${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware}" \
               "${CRAFT_PART_BUILD}/${soc_family}"
       done
 
-      cp -f "${CRAFT_STAGE}/firmware/hdmi/cadence/signed_dp_imx8m.bin" \
-            "${CRAFT_PART_BUILD}/${soc_family}"
-      cp -f "${CRAFT_STAGE}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin" \
+      # ele firmware
+      cp -f "${CRAFT_STAGE}/mx93a1-ahab-container.img" \
             "${CRAFT_PART_BUILD}/${soc_family}"
 
       # atf
@@ -309,16 +309,13 @@ parts:
             "${CRAFT_PART_BUILD}/${soc_family}"
 
       # u-boot
-      for bin in u-boot.bin u-boot-spl.bin \
-                 imx-boot-tools/u-boot-nodtb.bin imx-boot-tools/${platform}-evk.dtb
+      for bin in u-boot.bin u-boot-spl.bin
       do
         cp -f "${CRAFT_STAGE}/${bin}" \
               "${CRAFT_PART_BUILD}/${soc_family}"
       done
 
-      # setup link to mkimage_uboot
-      ln -sf "${CRAFT_STAGE}/mkimage" "${soc_family}/mkimage_uboot"
-      make SOC=iMX8MM flash_evk
+      make SOC=iMX93 REV=A1 TEE=tee.bin dtbs=imx93-11x11-evk.dtb flash_singleboot
 
       install -m 644 -D "${CRAFT_PART_BUILD}/${soc_family}/flash.bin" \
                         "${CRAFT_PART_INSTALL}/blobs/imx-boot.bin"
