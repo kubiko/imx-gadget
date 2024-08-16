@@ -240,6 +240,21 @@ parts:
     prime:
       - -*
 
+  imx-firmware-ele:
+    plugin: nil
+    override-pull: |
+      # latest firmware version can be found in
+      # https://github.com/nxp-imx/meta-imx/ -b <relevant release> in SCR-<release version>.txt
+      firmware_version="0.1.2-4ed450a"
+      wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-ele-imx-${firmware_version}.bin \
+        -O firmware-ele-imx.bin
+    override-build: |
+      chmod +x firmware-ele-imx.bin
+      ./firmware-ele-imx.bin --force --auto-accept
+      cp -r firmware-ele-imx-*/* ${CRAFT_PART_INSTALL}
+    prime:
+      - -*
+
   imx-boot:
     after:
       - arm-trusted-firmware
