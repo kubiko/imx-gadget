@@ -305,7 +305,7 @@ parts:
               "${CRAFT_PART_BUILD}/${soc_family}"
       done
 
-      make SOC=iMX93 REV=A1 TEE=tee.bin dtbs=imx93-11x11-evk.dtb flash_singleboot
+      make SOC=iMX93 REV=A1 TEE=tee.bin dtbs=imx93-9x9-qsb.dtb flash_singleboot
 
       install -m 644 -D "${CRAFT_PART_BUILD}/${soc_family}/flash.bin" \
                         "${CRAFT_PART_INSTALL}/blobs/imx-boot.bin"
