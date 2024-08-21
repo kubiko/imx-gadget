@@ -272,7 +272,7 @@ parts:
       cp ${CRAFT_STAGE}/u-boot-spl.bin iMX93
       # ele firmware
       cp ${CRAFT_STAGE}/mx93a1-ahab-container.img iMX93
-      make SOC=iMX9 REV=A1 TEE=tee.bin dtbs=imx93-11x11-evk.dtb flash_singleboot
+      make SOC=iMX9 REV=A1 TEE=tee.bin dtbs=imx93-9x9-qsb.dtb flash_singleboot
       install -m 644 -D iMX93/flash.bin ${CRAFT_PART_INSTALL}/blobs/imx-boot.bin
 
   flash-script: # uuu flash script
