@@ -3,7 +3,7 @@ summary: NXP i.MX8M Mini EVK support package
 description: |
  Support files for booting i.MX8M Mini EVK board
 
-version: 22-1-6.6.23-2.0.0
+version: 22-1-6.6.36-2.1.0
 type: gadget
 
 base: core22
@@ -59,7 +59,7 @@ parts:
     plugin: nil
     source: https://github.com/nxp-imx/imx-atf.git
     source-type: git
-    source-tag: lf-6.6.23-2.0.0
+    source-tag: lf-6.6.36-2.1.0
     source-depth: 1
     build-environment:
       - PLAT: "imx8mm"
@@ -100,7 +100,7 @@ parts:
     plugin: nil
     source: https://github.com/nxp-imx/imx-optee-os.git
     source-type: git
-    source-tag: lf-6.6.23-2.0.0
+    source-tag: lf-6.6.36-2.1.0
     source-depth: 1
     build-environment:
       - ARCH: "arm"
@@ -188,7 +188,7 @@ parts:
     plugin: nil
     source: https://git.launchpad.net/~ondrak/+git/u-boot
     source-type: git
-    source-tag: lf-6.6.23-2.0.0-uc
+    source-tag: lf-6.6.36-2.1.0-uc
     source-depth: 1
     build-environment:
       - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
@@ -229,7 +229,7 @@ parts:
     override-pull: |
       # latest firmware version can be found in
       # https://github.com/nxp-imx/meta-imx/ -b <relevant release> in SCR-<release version>.txt
-      firmware_version="8.24-fbe0a4c"
+      firmware_version="8.25-27879f8"
       wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-${firmware_version}.bin \
         -O firmware-imx.bin
     override-build: |
@@ -248,7 +248,7 @@ parts:
     plugin: nil
     source: https://github.com/nxp-imx/imx-mkimage.git
     source-type: git
-    source-tag: lf-6.6.23-2.0.0
+    source-tag: lf-6.6.36-2.1.0
     source-depth: 1
     override-build: |
       platform="imx8mm"
