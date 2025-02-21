@@ -76,19 +76,21 @@ parts:
     override-build: |
       make \
         PLAT=${PLAT} \
-        BUILD_BASE=${CRAFT_PART_BUILD}/build \
+        BUILD_BASE="${CRAFT_PART_BUILD}/build" \
         bl31 \
-        -j$(nproc)
+        -j${CRAFT_PARALLEL_BUILD_COUNT}
+
       make \
         PLAT=${PLAT} \
-        BUILD_BASE=${CRAFT_PART_BUILD}/build-optee \
+        BUILD_BASE="${CRAFT_PART_BUILD}/build-optee" \
         SPD=opteed \
         bl31 \
-        -j$(nproc)
-      cp ${CRAFT_PART_BUILD}/build/${PLAT}/release/bl31.bin \
-         ${CRAFT_PART_INSTALL}/bl31-${PLAT}.bin
-      cp ${CRAFT_PART_BUILD}/build-optee/${PLAT}/release/bl31.bin \
-         ${CRAFT_PART_INSTALL}/bl31-${PLAT}.bin-optee
+        -j${CRAFT_PARALLEL_BUILD_COUNT}
+
+      cp -f "${CRAFT_PART_BUILD}/build/${PLAT}/release/bl31.bin" \
+         "${CRAFT_PART_INSTALL}/bl31-${PLAT}.bin"
+      cp -f "${CRAFT_PART_BUILD}/build-optee/${PLAT}/release/bl31.bin" \
+         "${CRAFT_PART_INSTALL}/bl31-${PLAT}.bin-optee"
     prime:
       - -*
 
@@ -134,19 +136,23 @@ parts:
       - PYTHONIOENCODING: utf-8
     override-build: |
       # add optee-fde TA
-      cp -r ${CRAFT_STAGE}/optee-fde/ta/fde_key_handler ${CRAFT_PART_BUILD}/ta/
+      cp -rf "${CRAFT_STAGE}/optee-fde/ta/fde_key_handler" "${CRAFT_PART_BUILD}/ta/"
+
       export OPTEE_VERSION=$(head -1 CHANGELOG.md  | sed 's/# OP-TEE - version \(.*\) (.*/\1/g')-imx
-      make O=${CRAFT_PART_BUILD}/out -j$(nproc)
+
+      make O="${CRAFT_PART_BUILD}/out" -j${CRAFT_PARALLEL_BUILD_COUNT}
+
       # build again with early TAs
-      make O=${CRAFT_PART_BUILD}/out -j$(nproc) \
+      make O="${CRAFT_PART_BUILD}/out" -j${CRAFT_PARALLEL_BUILD_COUNT} \
          CFG_EARLY_TA=y \
          EARLY_TA_PATHS="out/ta/pkcs11/fd02c9da-306c-48c7-a49c-bbd827ae86ee.stripped.elf \
                  out/ta/trusted_keys/f04a0fe7-1f5d-4b9b-abf7-619b85b4ce8c.stripped.elf \
                  out/ta/fde_key_handler/fd1b2a86-3668-11eb-adc1-0242ac120002.stripped.elf"
-      ${CRAFT_ARCH_TRIPLET_BUILD_FOR}-objcopy \
+
+      "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-objcopy" \
          -O binary \
-         ${CRAFT_PART_BUILD}/out/core/tee.elf \
-         ${CRAFT_PART_INSTALL}/tee.bin
+         "${CRAFT_PART_BUILD}/out/core/tee.elf" \
+         "${CRAFT_PART_INSTALL}/tee.bin"
     prime:
       - -*
 
@@ -164,7 +170,7 @@ parts:
       - CFG_TA_TEST_PATH=n
       - CFG_TEE_SUPP_LOG_LEVEL=0
       - SBINDIR=/usr/sbin
-      - LIBDIR=/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+      - LIBDIR="/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}"
       - PKG_CONFIG=pkg-config
     stage:
       - usr/sbin
@@ -200,35 +206,48 @@ parts:
     source-tag: lf-6.6.52-2.2.0-uc
     source-depth: 1
     build-environment:
-      - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
       - CC: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc"
+      - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
     override-build: |
       # copy in place dtsi with pub part of kernel signing key
-      cp ${CRAFT_STAGE}/u-boot-pubkey.dtsi \
-         ${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi
+      cp -f "${CRAFT_STAGE}/u-boot-pubkey.dtsi" \
+         "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi"
+
       # update mmc_seed_part and mmc_boot_part from uc.lst
-      mmc_seed_part="$(grep mmc_seed_part ${CRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
-      mmc_boot_part="$(grep mmc_boot_part ${CRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
+      mmc_seed_part="$(grep mmc_seed_part "${CRAFT_STAGE}/blobs/uc.lst" | sed -e 's/^# //')"
+      mmc_boot_part="$(grep mmc_boot_part "${CRAFT_STAGE}/blobs/uc.lst" | sed -e 's/^# //')"
+
       sed -i \
          -e 's/mmc_seed_part=\(.*\)\\0"/'"${mmc_seed_part}"'\\0"/g' \
          -e 's/mmc_boot_part=\(.*\)\\0"/'"${mmc_boot_part}"'\\0"/g' \
-         ${CRAFT_PART_BUILD}/include/configs/*.h
+         "${CRAFT_PART_BUILD}/include/configs/"*.h
+
       # Add GIT revision to the local version
       head=$(git rev-parse --verify --short HEAD 2> /dev/null)
       imx_version=$(git describe --tags | cut -c 4-)
       printf "%s%s%s" "-${imx_version}" "+g" "${head}" > .scmversion
+
       make imx8mm_evk_config
-      make -j$(nproc)
-      cp u-boot.bin ${CRAFT_PART_INSTALL}/u-boot.bin
-      cp spl/u-boot-spl.bin ${CRAFT_PART_INSTALL}/u-boot-spl.bin
-      mkdir -p ${CRAFT_PART_INSTALL}/imx-boot-tools
-      cp u-boot-nodtb.bin ${CRAFT_PART_INSTALL}/imx-boot-tools
-      cp u-boot.dtb \
-         ${CRAFT_PART_INSTALL}/imx-boot-tools/imx8mm-evk.dtb
+      make -j${CRAFT_PARALLEL_BUILD_COUNT}
+
+      cp -f "${CRAFT_PART_BUILD}/u-boot.bin"         \
+        "${CRAFT_PART_INSTALL}/u-boot.bin"
+      cp -f "${CRAFT_PART_BUILD}/spl/u-boot-spl.bin" \
+        "${CRAFT_PART_INSTALL}/u-boot-spl.bin"
+
+      mkdir -p "${CRAFT_PART_INSTALL}/imx-boot-tools"
+
+      cp -f u-boot.dtb       \
+         "${CRAFT_PART_INSTALL}/imx-boot-tools/imx8mm-evk.dtb"
+      cp -f u-boot-nodtb.bin \
+        "${CRAFT_PART_INSTALL}/imx-boot-tools"
+
       # copy tools/mkimage tool for imx-boot stage
-      cp tools/mkimage ${CRAFT_PART_INSTALL}
-      tools/mkenvimage -r -s 4096 -o ${CRAFT_PART_INSTALL}/boot.sel - < /dev/null
-      touch ${CRAFT_PART_INSTALL}/uboot.conf
+      cp -f tools/mkimage "${CRAFT_PART_INSTALL}"
+
+      # Create files required for snapd to boot u-boot devices
+      touch "${CRAFT_PART_INSTALL}/uboot.conf"
+      tools/mkenvimage -r -s 4096 -o "${CRAFT_PART_INSTALL}/boot.sel" - < /dev/null
     prime:
       - boot.sel
       - uboot.conf
@@ -242,9 +261,11 @@ parts:
       wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-${firmware_version}.bin \
         -O firmware-imx.bin
     override-build: |
-      chmod +x firmware-imx.bin
-      ./firmware-imx.bin --force --auto-accept
-      cp -r firmware-imx-*/firmware ${CRAFT_PART_INSTALL}
+      chmod +x "${CRAFT_PART_BUILD}/firmware-imx.bin"
+
+      "${CRAFT_PART_BUILD}/firmware-imx.bin" --force --auto-accept
+
+      cp -r "${CRAFT_PART_BUILD}/firmware-imx-"*/firmware "${CRAFT_PART_INSTALL}/"
     prime:
       - -*
 
@@ -262,24 +283,40 @@ parts:
     override-build: |
       platform="imx8mm"
       # firmware files
-      for ddr_firmware in lpddr4_pmu_train_1d_imem.bin lpddr4_pmu_train_1d_dmem.bin lpddr4_pmu_train_2d_imem.bin lpddr4_pmu_train_2d_dmem.bin; do
-        cp ${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware} iMX8M
+      for ddr_firmware in lpddr4_pmu_train_1d_imem.bin \
+                          lpddr4_pmu_train_1d_dmem.bin \
+                          lpddr4_pmu_train_2d_imem.bin \
+                          lpddr4_pmu_train_2d_dmem.bin; do
+        cp -f "${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware}" \
+          "${CRAFT_PART_BUILD}/iMX8M"
       done
-      cp ${CRAFT_STAGE}/firmware/hdmi/cadence/signed_dp_imx8m.bin iMX8M
-      cp ${CRAFT_STAGE}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin iMX8M
+
+      cp -f "${CRAFT_STAGE}/firmware/hdmi/cadence/signed_dp_imx8m.bin" \
+        "${CRAFT_PART_BUILD}/iMX8M"
+      cp -f "${CRAFT_STAGE}/firmware/hdmi/cadence/signed_hdmi_imx8m.bin" \
+        "${CRAFT_PART_BUILD}/iMX8M"
+
       # atf
-      cp ${CRAFT_STAGE}/bl31-${platform}.bin-optee iMX8M/bl31.bin
+      cp -f "${CRAFT_STAGE}/bl31-${platform}.bin-optee" \
+        "${CRAFT_PART_BUILD}/iMX8M/bl31.bin"
+
       # optee
-      cp ${CRAFT_STAGE}/tee.bin iMX8M
+      cp -f "${CRAFT_STAGE}/tee.bin" "${CRAFT_PART_BUILD}/iMX8M"
+
       # u-boot
-      cp ${CRAFT_STAGE}/u-boot.bin iMX8M
-      cp ${CRAFT_STAGE}/u-boot-spl.bin iMX8M
-      cp ${CRAFT_STAGE}/imx-boot-tools/u-boot-nodtb.bin iMX8M
-      cp ${CRAFT_STAGE}/imx-boot-tools/${platform}-evk.dtb iMX8M
+      for bin in u-boot.bin u-boot-spl.bin       \
+                 imx-boot-tools/u-boot-nodtb.bin \
+                 imx-boot-tools/${platform}-evk.dtb; do
+        cp -f "${CRAFT_STAGE}/${bin}" \
+          "${CRAFT_PART_BUILD}/iMX8M"
+      done
+
       # setup link to mkimage_uboot
-      ln -sf ${CRAFT_STAGE}/mkimage iMX8M/mkimage_uboot
+      ln -sf "${CRAFT_STAGE}/mkimage" iMX8M/mkimage_uboot
+
       make SOC=iMX8MM flash_evk
-      cp iMX8M/flash.bin ${CRAFT_PART_INSTALL}/
+
+      cp -f "${CRAFT_PART_BUILD}/iMX8M/flash.bin" "${CRAFT_PART_INSTALL}/"
     organize:
       flash.bin: blobs/imx-boot.bin
 
@@ -308,7 +345,7 @@ parts:
       # default 1st partition offset is 1MB, unless defined otherwise
       partition_offset=0
       unset mmc_boot_part mmc_seed_part
-      for p in $(${yq} eval '.volumes.[].structure.[].name' ${CRAFT_PROJECT_DIR}/gadget.yaml)
+      for p in $(${yq} eval '.volumes.[].structure.[].name' "${CRAFT_PROJECT_DIR}/gadget.yaml")
       do
       # ignore bare structures
       if [ "${p}" != "null" ]; then
@@ -323,9 +360,9 @@ parts:
 
         # include partitions in the list
         export p=${p}
-        p_offset=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .offset' ${CRAFT_PROJECT_DIR}/gadget.yaml)
-        p_size=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .size' ${CRAFT_PROJECT_DIR}/gadget.yaml)
-        p_type=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' ${CRAFT_PROJECT_DIR}/gadget.yaml)
+        p_offset=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .offset' "${CRAFT_PROJECT_DIR}/gadget.yaml")
+        p_size=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .size' "${CRAFT_PROJECT_DIR}/gadget.yaml")
+        p_type=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' "${CRAFT_PROJECT_DIR}/gadget.yaml")
         p_size=$(convert_size ${p_size})
         gpt_partitions="${gpt_partitions};name=${p},size=${p_size},start=${p_offset},type=${p_type}"
         if [ "${partition_offset}" == "0" ]; then
@@ -348,7 +385,7 @@ parts:
       fi
       done
 
-      cat << EOF > ${CRAFT_PART_INSTALL}/uc.lst
+      cat << EOF > "${CRAFT_PART_INSTALL}/uc.lst"
       uuu_version 1.4.69
 
       # This command will be run when i.MX6/7 i.MX8MM, i.MX8MQ
@@ -405,14 +442,16 @@ parts:
     plugin: nil
     override-build: |
       install -D -m 755 \
-      ${CRAFT_PROJECT_DIR}/p11-kit-servers \
-      ${CRAFT_PART_INSTALL}/usr/bin/p11-kit-servers
+      "${CRAFT_PROJECT_DIR}/p11-kit-servers" \
+      "${CRAFT_PART_INSTALL}/usr/bin/p11-kit-servers"
+
       install -D -m 755 \
-      ${CRAFT_PROJECT_DIR}/p11tool \
-      ${CRAFT_PART_INSTALL}/usr/bin/p11tool
+      "${CRAFT_PROJECT_DIR}/p11tool" \
+      "${CRAFT_PART_INSTALL}/usr/bin/p11tool"
+
       install -D -m 755 \
-      ${CRAFT_PROJECT_DIR}/pkcs11-tool \
-      ${CRAFT_PART_INSTALL}/usr/bin/pkcs11-tool
+      "${CRAFT_PROJECT_DIR}/pkcs11-tool" \
+      "${CRAFT_PART_INSTALL}/usr/bin/pkcs11-tool"
 
 build-packages:
   - bison
