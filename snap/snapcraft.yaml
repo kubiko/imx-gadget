@@ -13,6 +13,14 @@ platforms:
     build-on: [amd64, arm64]
     build-for: arm64
 
+package-repositories:
+  - type: apt
+    components: [main, universe, multiverse, restricted]
+    architectures: [$CRAFT_ARCH_BUILD_FOR]
+    suites: [noble, noble-backports, noble-updates]
+    key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
+    url: http://ports.ubuntu.com/ubuntu-ports/
+
 confinement: strict
 grade: stable
 
