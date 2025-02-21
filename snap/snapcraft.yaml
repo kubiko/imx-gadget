@@ -458,18 +458,19 @@ build-packages:
   - build-essential
   - device-tree-compiler
   - flex
-  - libxml2-dev
+  - libgnutls28-dev
   - libssl-dev
+  - libxml2-dev
   - pkgconf
   - python3
   - python3-cryptography
-  - python3-pyelftools
   - python3-pycryptodome
+  - python3-pyelftools
   - wget
   - zlib1g-dev
   - on amd64:
-    - gcc-aarch64-linux-gnu
-    - uuid-dev:arm64
+    - gcc-${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+    - uuid-dev:${CRAFT_ARCH_BUILD_FOR}
   - on arm64:
     - gcc
     - uuid-dev
