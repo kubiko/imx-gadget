@@ -9,14 +9,19 @@ volumes:
         type: bare
         content:
             - image: blobs/imx-boot.bin
-      - name: ubuntu-seed
+      - name: tee-storage
         offset: 10485760 # 0xa00000 bytes (20480)
+        filesystem: ext4
+        type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
+        size: 50M
+      - name: ubuntu-seed
+        offset: 62914560 # 0xa00000 + tee-storage(0x3200000) = 0x3C00000
         role: system-seed
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         size: 500M
       - name: ubuntu-boot
-        offset: 534773760 # 0xa00000 + ubuntu-seed(0x1F400000) = 0x1FE00000
+        offset: 587202560 # 0x3C00000 + ubuntu-seed(0x1F400000) = 0x23000000
         role: system-boot
         filesystem: vfat
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
@@ -27,13 +32,13 @@ volumes:
           - source: boot.sel
             target: uboot/ubuntu/boot.sel
       - name: ubuntu-save
-        offset: 744488960 # 0x1FE00000 + ubuntu-boot(0xC800000) = 0x2C600000
+        offset: 796917760 # 0x23000000 + ubuntu-boot(0xC800000) = 0x2F800000
         role: system-save
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         size: 16M
       - name: ubuntu-data
-        offset: 761266176 # 0x2C600000 + ubuntu-save(0x1000000) = 0x2D600000
+        offset: 813694976 # 0x2F800000 + ubuntu-save(0x1000000) = 0x30800000
         role: system-data
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
