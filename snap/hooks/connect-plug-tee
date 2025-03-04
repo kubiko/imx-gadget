@@ -1,5 +1,7 @@
-#!/bin/bash -e
+#!/bin/sh
 
-# when tee is connected, we can enable tee-supplicant service
-snapctl start --enable ${SNAP_INSTANCE_NAME}.tee-supplicant
-snapctl start --enable ${SNAP_INSTANCE_NAME}.p11-kit-servers
+# if tee is connected, enable services
+if snapctl is-connected tee-storage; then
+  snapctl start --enable "${SNAP_INSTANCE_NAME}.tee-supplicant"
+  snapctl start --enable "${SNAP_INSTANCE_NAME}.p11-kit-servers"
+fi
