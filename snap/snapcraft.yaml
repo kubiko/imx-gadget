@@ -479,6 +479,18 @@ package-repositories:
      key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
      url: http://ports.ubuntu.com/ubuntu-ports
 
+plugs:
+  tee-storage:
+    interface: mount-control
+    mount:
+    - what: /dev/disk/by-partlabel/tee-storage
+      where: $SNAP_COMMON/tee-storage
+      persistent: true
+      type:
+        - ext4
+      options:
+        - rw
+
 slots:
   tee-plugins:
     interface: content
