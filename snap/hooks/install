@@ -1,0 +1,11 @@
+#!/bin/sh
+
+# try to setup mount for tee-storage
+# ignore error, once hooks is connected we will try again
+snapctl mount \
+        --persistent \
+        -t ext4 \
+        -o rw \
+        "/dev/disk/by-partlabel/tee-storage" \
+        "${SNAP_COMMON}/tee-storage" \
+        || true
