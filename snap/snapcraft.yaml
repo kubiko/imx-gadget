@@ -3,7 +3,7 @@ summary: NXP i.MX8M Mini EVK support package
 description: |
  Support files for booting i.MX8M Mini EVK board
 
-version: 22-1-2.2.0
+version: 22-2-2.2.0
 type: gadget
 
 base: core22
@@ -21,7 +21,7 @@ environment:
 
 apps:
   tee-supplicant:
-    command: usr/sbin/tee-supplicant --fs-parent-path $SNAP_SAVE_DATA/optee-fs --ta-path $SNAP_COMMON/lib/optee_armtz --plugin-path $SNAP_COMMON/usr/lib/tee-supplicant/plugins
+    command: usr/sbin/tee-supplicant --fs-parent-path $SNAP_COMMON/tee-storage --ta-path $SNAP_COMMON/lib/optee_armtz --plugin-path $SNAP_COMMON/usr/lib/tee-supplicant/plugins
     daemon: simple
     plugs:
       - network-bind
