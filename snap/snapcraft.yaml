@@ -199,6 +199,8 @@ parts:
       # copy in place dtsi with pub part of kernel signing key
       cp ${CRAFT_STAGE}/u-boot-pubkey.dtsi \
          ${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi
+      cp ${CRAFT_STAGE}/u-boot-pubkey.dtsi \
+         ${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-dtb-pubkey.dtsi
       # update mmc_seed_part and mmc_boot_part from uc.lst
       mmc_seed_part="$(grep mmc_seed_part ${CRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
       mmc_boot_part="$(grep mmc_boot_part ${CRAFT_STAGE}/blobs/uc.lst | sed -e 's/^# //')"
