@@ -158,6 +158,7 @@ parts:
       - SBINDIR=/usr/sbin
       - LIBDIR=/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
       - PKG_CONFIG=pkg-config
+      - PKG_CONFIG_PATH=/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}/pkgconfig
     stage:
       - usr/sbin
       - usr/lib/*/lib*so*
@@ -422,10 +423,20 @@ build-packages:
   - zlib1g-dev
   - on amd64:
     - gcc-aarch64-linux-gnu
+    - libc6-dev-arm64-cross
     - uuid-dev:arm64
   - on arm64:
     - gcc
     - uuid-dev
+
+package-repositories:
+  - type: apt
+    architectures: [arm64]
+    formats: [deb, deb-src]
+    components: [main]
+    suites: [noble, noble-updates, noble-backports]
+    key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
+    url: http://ports.ubuntu.com/ubuntu-ports
 
 slots:
   tee-plugins:
