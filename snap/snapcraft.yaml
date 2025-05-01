@@ -418,7 +418,9 @@ parts:
       FB: ucmd mmc dev \${emmc_dev}
 
       # Flashing partitions, use timeout 20s
-      FB: ucmd echo "If ubuntu-seed partition does not exist, powercycle the device"
+      FB: ucmd echo "If ubuntu-seed, partner or ubuntu-seed  partitions do not exist, powercycle the device"
+      FB: flash partner partner.img
+      FB: flash tee-storage tee-storage.img
       FB[-t 20000]: flash ubuntu-seed ubuntu-seed.img
       FB: done
       EOF
