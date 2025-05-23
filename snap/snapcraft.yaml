@@ -1,7 +1,7 @@
-name: imx93-evk
-summary: NXP i.MX93 EVK support package
+name: imx93-frdm
+summary: FRDM i.MX93 Development Board
 description: |
- Support files for booting i.MX93 Mini EVK board
+ Support files for booting i.MX93 FRDM Development Board
 
 version: 24-3-6.12.3-1.0.0
 type: gadget
