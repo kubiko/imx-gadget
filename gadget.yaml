@@ -29,26 +29,41 @@ volumes:
         role: system-seed
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
-        size: 800M
+        size: 50M
+      - name: ubuntu-system-a
+        offset: 126877696 # 0x4700000 + ubuntu-seed(0x3200000) = 0x7900000
+        type: 20117F86-E985-4357-B9EE-374BC1D8487D
+        size: 500M
+      - name: ubuntu-system-b
+        offset: 651165696 # 0x7900000 + ubuntu-system-a(0x1F400000) = 0x26D00000
+        type: 20117F86-E985-4357-B9EE-374BC1D8487D
+        size: 500M
+      - name: ubuntu-apps-a
+        offset: 1175453696 # 0x26D00000 + ubuntu-system-b(0x1F400000) = 0x46100000
+        type: 20117F86-E985-4357-B9EE-374BC1D8487D
+        size: 500M
+      - name: ubuntu-apps-b
+        offset: 1699741696 # 0x46100000 + ubuntu-apps-a(0x1F400000) = 0x65500000
+        type: 20117F86-E985-4357-B9EE-374BC1D8487D
+        size: 500M
       - name: ubuntu-boot
-        offset: 913309696 # 0x4700000 + ubuntu-seed(0x32000000) = 0x36700000
+        offset: 2224029696 # 0x65500000 + ubuntu-apps-a(0x1F400000) = 0x84900000
         role: system-boot
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
-        # type: C12A7328-F81F-11D2-BA4B-00A0C93EC93B
-        size: 300M
+        size: 10M
       - name: ubuntu-save
-        offset: 1227882496 # 0x36700000 + ubuntu-boot(0x12C00000) = 0x49300000
+        offset: 2234515456 # 0x84900000 + ubuntu-boot(0xA00000) = 0x85300000
         role: system-save
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
-        size: 16M
+        size: 50M
       - name: ubuntu-data
-        offset: 1244659712 # 0x49300000 + ubuntu-save(0x1000000) = 0x4A300000
+        offset: 2286944256 # 0x85300000 + ubuntu-save(0x3200000) = 0x88500000
         role: system-data
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
-        size: 1000M
+        size: 10000M
 
 volume-assignments:
   - name: emmc2
