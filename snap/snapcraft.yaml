@@ -483,6 +483,9 @@ hooks:
   install:
     plugs:
       - tee-storage
+  prepare-device:
+    plugs:
+      - hardware-observe
 
 plugs:
   tee-storage:
