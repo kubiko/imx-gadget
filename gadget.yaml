@@ -4,11 +4,6 @@ volumes:
     schema: gpt
     bootloader: u-boot
     structure:
-      - offset: 33792  # 0x8400 bytes (66 sectors)
-        size: 10451456 # 0x9F7C00 bytes (20414)
-        type: bare
-        content:
-            - image: blobs/imx-boot.bin
       - name: ubuntu-boot-state
         offset: 10485760 # 0xA00000 bytes (20480)
         role: system-boot-state
@@ -50,10 +45,19 @@ volumes:
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         size: 1000M
 
+  emmc-boot:
+    schema: emmc
+    structure:
+      - name: boot0
+        content:
+          - image: blobs/imx-boot.bin
+
 volume-assignments:
   - name: emmc0
     assignment:
       emmc-uda:
+        device: /dev/disk/by-path/platform-42850000.mmc
+      emmc-boot:
         device: /dev/disk/by-path/platform-42850000.mmc
 
 defaults:
