@@ -4,11 +4,6 @@ volumes:
     schema: gpt
     bootloader: u-boot
     structure:
-      - offset: 33792  # 0x8400 bytes (66 sectors)
-        size: 10451456 # 0x9F7C00 bytes (20414)
-        type: bare
-        content:
-            - image: blobs/imx-boot.bin
       - name: u-boot-env
         offset: 10485760 # 0xA00000 bytes (20480)
         type: B3652CC6-0B39-4B22-9496-9AF8C018D12A
