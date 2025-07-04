@@ -51,10 +51,10 @@ volumes:
         size: 1000M
 
 volume-assignments:
-  - name: emmc2
+  - name: emmc0
     assignment:
       emmc-uda:
-        device: /dev/disk/by-path/platform-30b60000.mmc
+        device: /dev/disk/by-path/platform-42850000.mmc
 
 defaults:
   # system retention settings
