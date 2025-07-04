@@ -53,6 +53,12 @@ volumes:
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         size: 1000M
 
+volume-assignments:
+  - name: emmc2
+    assignment:
+      emmc-uda:
+        device: /dev/disk/by-path/platform-30b60000.mmc
+
 defaults:
   # system retention settings
   system:
