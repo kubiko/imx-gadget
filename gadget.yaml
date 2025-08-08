@@ -64,3 +64,6 @@ defaults:
   system:
     refresh:
       retain: 2
+    watchdog:
+      runtime-timeout: 60s
+      shutdown-timeout: 300s
