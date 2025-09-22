@@ -514,3 +514,9 @@ slots:
   pkcs11-optee-slot-2:
     interface: pkcs11
     pkcs11-socket: /run/p11-kit/optee-slot-2
+  i2c-0:
+    interface: i2c
+    path: /dev/i2c-0
+  i2c-1:
+    interface: i2c
+    path: /dev/i2c-1
