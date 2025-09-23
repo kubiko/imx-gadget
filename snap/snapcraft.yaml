@@ -1,7 +1,7 @@
-name: imx91-evk
-summary: NXP i.MX91 evk support package
+name: imx91-frdm
+summary: FRDM i.MX91 Development Board
 description: |
- Support files for booting i.MX91 evk board
+ Support files for booting i.MX91 FRDM Development Board
 
 version: 24-11-6.18.2-1.0.0
 type: gadget
