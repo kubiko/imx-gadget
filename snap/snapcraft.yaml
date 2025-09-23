@@ -1,7 +1,7 @@
-name: imx93-evk
-summary: NXP i.MX93 evk support package
+name: imx91-evk
+summary: NXP i.MX91 evk support package
 description: |
- Support files for booting i.MX93 evk board
+ Support files for booting i.MX91 evk board
 
 version: 24-12-6.18.20-2.0.0
 type: gadget
