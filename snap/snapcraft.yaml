@@ -208,14 +208,14 @@ parts:
       sed -i \
           -e 's/mmc_seed_part=\(.*\)/'"${mmc_seed_part}"'/g' \
           -e 's/mmc_boot_part=\(.*\)/'"${mmc_boot_part}"'/g' \
-          "${CRAFT_PART_BUILD}/board/freescale/imx91_evk/imx91_evk.env"
+          "${CRAFT_PART_BUILD}/board/freescale/imx91_frdm/imx91_frdm.env"
 
       # Add GIT revision to the local version
       head=$(git rev-parse --verify --short HEAD 2> /dev/null)
       imx_version=$(git describe --tags | cut -c 4-)
       printf "%s%s%s" "-${imx_version}" "+g" "${head}" > .scmversion
 
-      make imx91_11x11_evk_defconfig
+      make imx91_11x11_frdm_defconfig
       make -j${CRAFT_PARALLEL_BUILD_COUNT}
 
       cp -f "${CRAFT_PART_BUILD}/u-boot.bin" \
