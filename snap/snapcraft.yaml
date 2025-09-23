@@ -288,8 +288,8 @@ parts:
     source-tag: lf-6.18.20-2.0.0
     source-depth: 1
     override-build: |
-      platform="imx93"
-      soc_family="iMX93"
+      platform="imx91"
+      soc_family="iMX91"
       # firmware files
       for ddr_firmware in lpddr4_imem_1d_v202201.bin \
                           lpddr4_dmem_1d_v202201.bin \
@@ -301,7 +301,7 @@ parts:
       done
 
       # ele firmware
-      cp -f "${CRAFT_STAGE}/mx93a1-ahab-container.img" \
+      cp -f "${CRAFT_STAGE}/mx91a0-ahab-container.img" \
             "${CRAFT_PART_BUILD}/${soc_family}"
 
       # atf
@@ -319,7 +319,7 @@ parts:
               "${CRAFT_PART_BUILD}/${soc_family}"
       done
 
-      make SOC=iMX93 REV=A1 TEE=tee.bin dtbs=imx93-11x11-evk.dtb flash_singleboot
+      make SOC=iMX91 REV=A0 TEE=tee.bin dtbs=imx91-11x11-evk.dtb flash_singleboot
 
       install -m 644 -D "${CRAFT_PART_BUILD}/${soc_family}/flash.bin" \
                         "${CRAFT_PART_INSTALL}/blobs/imx-boot.bin"
