@@ -123,7 +123,7 @@ parts:
       - CROSS_COMPILE_ta_arm64: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
       - DEBUG: "0"
       - PLATFORM: "imx"
-      - PLATFORM_FLAVOR: "mx93evk"
+      - PLATFORM_FLAVOR: "mx91evk"
       - PYTHON: "/usr/bin/python3"
       - PYTHONHOME: "/usr"
       - PYTHONPATH: "/usr/lib/python3.12:/usr/lib/python3.12/lib-dynload:/usr/lib/python3/dist-packages"
