@@ -3,10 +3,10 @@ summary: FRDM i.MX93 Development Board
 description: |
  Support files for booting i.MX93 FRDM Development Board
 
-version: 24-10-6.18.2-1.0.0
+version: 26-10-6.18.2-1.0.0
 type: gadget
 
-base: core24
+base: core26
 
 platforms:
   arm64:
@@ -471,7 +471,7 @@ package-repositories:
      architectures: [$CRAFT_ARCH_BUILD_FOR]
      formats: [deb, deb-src]
      components: [main]
-     suites: [noble, noble-updates, noble-backports]
+     suites: [resolute, resolute-updates, resolute-backports]
      key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
      url: http://ports.ubuntu.com/ubuntu-ports
 
