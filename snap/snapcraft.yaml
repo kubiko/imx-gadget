@@ -3,10 +3,10 @@ summary: FRDM i.MX93 Development Board
 description: |
  Support files for booting i.MX93 FRDM Development Board
 
-version: 24-7-6.18.2-1.0.0
+version: 26-7-6.18.2-1.0.0
 type: gadget
 
-base: core24
+base: core26
 
 platforms:
   arm64:
