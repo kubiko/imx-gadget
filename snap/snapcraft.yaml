@@ -491,6 +491,14 @@ plugs:
         - ext4
       options:
         - rw
+  load-wifi-module:
+    interface: kernel-module-load
+    modules:
+      - name: moal
+        load: on-boot
+        options: mod_para=nxp/wifi_mod_para.conf
+      - name: btnxpuart
+        load: denied
 
 slots:
   tee-plugins:
