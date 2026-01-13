@@ -462,6 +462,7 @@ build-packages:
   - python3-pyelftools
   - wget
   - zlib1g-dev
+  - efitools
   - on amd64:
     - gcc-${CRAFT_ARCH_TRIPLET_BUILD_FOR}
     - libc6-dev-${CRAFT_ARCH_BUILD_FOR}-cross
