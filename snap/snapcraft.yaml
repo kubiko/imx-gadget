@@ -3,14 +3,13 @@ summary: FRDM i.MX93 Development Board
 description: |
  Support files for booting i.MX93 FRDM Development Board
 
-version: 24-6-6.12.49-2.2.0
+version: 22-6-6.12.49-2.2.0
 type: gadget
 
-base: core24
+base: core22
 
-platforms:
-  arm64:
-    build-on: [amd64, arm64]
+architectures:
+  - build-on: [amd64, arm64]
     build-for: arm64
 
 confinement: strict
@@ -128,7 +127,7 @@ parts:
       - PLATFORM_FLAVOR: "mx93evk"
       - PYTHON: "/usr/bin/python3"
       - PYTHONHOME: "/usr"
-      - PYTHONPATH: "/usr/lib/python3.12:/usr/lib/python3.12/lib-dynload:/usr/lib/python3/dist-packages"
+      - PYTHONPATH: "/usr/lib/python3.11:/usr/lib/python3.11/lib-dynload:/usr/lib/python3/dist-packages"
       - PYTHONIOENCODING: utf-8
       - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
     override-build: |
