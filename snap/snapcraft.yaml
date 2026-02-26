@@ -245,13 +245,13 @@ parts:
       cp -f "${CRAFT_PART_BUILD}/tools/mkimage" \
             "${CRAFT_PART_INSTALL}"
       # Create files required for snapd to boot u-boot devices
-      touch "${CRAFT_PART_INSTALL}/uboot.conf"
+      touch "${CRAFT_PART_INSTALL}/ubootpart.conf"
       "${CRAFT_PART_BUILD}/tools/mkenvimage" \
-          -r -s 4096 \
-          -o "${CRAFT_PART_INSTALL}/boot.sel" - < /dev/null
+          -r -s 8192 \
+          -o "${CRAFT_PART_INSTALL}/ubootpart.sel" - < /dev/null
     prime:
-      - boot.sel
-      - uboot.conf
+      - ubootpart.sel
+      - ubootpart.conf
 
   imx-firmware:
     plugin: nil
@@ -431,6 +431,7 @@ parts:
 
       # Flashing partitions, use timeout 20s
       FB: ucmd echo "If ubuntu-seed, partner or ubuntu-seed  partitions do not exist, powercycle the device"
+      FB: flash ubuntu-boot-state ubuntu-boot-state.img
       FB: flash partner partner.img
       FB: flash tee-storage tee-storage.img
       FB[-t 20000]: flash ubuntu-seed ubuntu-seed.img
