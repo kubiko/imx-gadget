@@ -9,9 +9,10 @@ volumes:
         type: bare
         content:
             - image: blobs/imx-boot.bin
-      - name: u-boot-env
+      - name: ubuntu-boot-state
         offset: 10485760 # 0xA00000 bytes (20480)
-        type: B3652CC6-0B39-4B22-9496-9AF8C018D12A
+        role: system-boot-state
+        type: 3DE21764-95BD-54BD-A5C3-4ABE786F38A8
         size: 1M
       - name: partner
         offset: 11534336 # 0xA00000  + u-boot-env(0x100000) = 0xB00000
@@ -32,14 +33,10 @@ volumes:
       - name: ubuntu-boot
         offset: 913309696 # 0x4700000 + ubuntu-seed(0x32000000) = 0x36700000
         role: system-boot
-        filesystem: vfat
+        filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         # type: C12A7328-F81F-11D2-BA4B-00A0C93EC93B
         size: 300M
-        content:
-          # TODO:UC20: install the boot.sel via snapd instead of via the gadget
-          - source: boot.sel
-            target: uboot/ubuntu/boot.sel
       - name: ubuntu-save
         offset: 1227882496 # 0x36700000 + ubuntu-boot(0x12C00000) = 0x49300000
         role: system-save
