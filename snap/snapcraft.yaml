@@ -272,7 +272,7 @@ parts:
     override-pull: |
       # latest firmware version can be found in
       # https://github.com/nxp-imx/meta-imx/ -b <relevant release> in SCR-<release version>.txt
-      firmware_version="2.0.4-93492e0"
+      firmware_version="2.0.5-29313e0"
       wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-ele-imx-${firmware_version}.bin \
         -O firmware-ele-imx.bin
     override-build: |
