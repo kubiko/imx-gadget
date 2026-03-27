@@ -88,20 +88,20 @@ parts:
     prime:
       - -*
 
-  optee-keys:
+  dev-pub-keys:
     plugin: dump
     source: https://git.launchpad.net/~ondrak/+git/dev-keys
     source-type: git
-    source-branch: ta-keys
+    source-branch: master
     organize:
-      '*': ta-keys/
+      '*': keys/
     prime:
       - -*
 
   optee-os:
     after:
       - optee-fde
-      - optee-keys
+      - dev-pub-keys
     plugin: nil
     source: https://github.com/nxp-imx/imx-optee-os.git
     source-type: git
@@ -130,7 +130,7 @@ parts:
       - PYTHONHOME: "/usr"
       - PYTHONPATH: "/usr/lib/python3.12:/usr/lib/python3.12/lib-dynload:/usr/lib/python3/dist-packages"
       - PYTHONIOENCODING: utf-8
-      - TA_PUBLIC_KEY: "${CRAFT_STAGE}/ta-keys/ta_public.pem"
+      - TA_PUBLIC_KEY: "${CRAFT_STAGE}/keys/ta_public.pem"
     override-build: |
       # add optee-fde TA
       cp -r "${CRAFT_STAGE}/optee-fde/ta/fde_key_handler" "${CRAFT_PART_BUILD}/ta"
@@ -182,20 +182,9 @@ parts:
     prime:
       - -*
 
-  pub-signing-key:
-    plugin: dump
-    source: https://git.launchpad.net/~ondrak/+git/dev-keys
-    source-type: git
-    source-branch: master
-    stage:
-      - u-boot-pubkey.dtsi
-      - u-boot-dtb-pubkey.dtsi
-    prime:
-      - -*
-
   u-boot:
     after:
-      - pub-signing-key
+      - dev-pub-keys
       - flash-script
     plugin: nil
     source: https://git.launchpad.net/~ondrak/+git/u-boot
@@ -207,11 +196,11 @@ parts:
       - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
     override-build: |
       # copy in place dtsi with pub part of kernel signing key
-      cp -f "${CRAFT_STAGE}/u-boot-pubkey.dtsi" \
+      cp -f "${CRAFT_STAGE}/keys/u-boot-pubkey.dtsi" \
             "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi"
       # TODO: REPLACE: if this is ODM gadget use true ODM key dtsi
       # If dtb signing key is not needed, set the same key as u-boot-pubkey
-      cp -f "${CRAFT_STAGE}/u-boot-dtb-pubkey.dtsi" \
+      cp -f "${CRAFT_STAGE}/keys/u-boot-dtb-pubkey.dtsi" \
             "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-dtb-pubkey.dtsi"
 
       # update mmc_seed_part and mmc_boot_part from uc.lst
