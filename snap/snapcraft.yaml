@@ -202,6 +202,9 @@ parts:
       # If dtb signing key is not needed, set the same key as u-boot-pubkey
       cp -f "${CRAFT_STAGE}/keys/u-boot-dtb-pubkey.dtsi" \
             "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-dtb-pubkey.dtsi"
+      # TODO: REPLACE: replace with true  production Platform Key!
+      cp -f "${CRAFT_STAGE}/keys/PK.auth" \
+            "${CRAFT_PART_BUILD}/arch/arm/dts/PK.auth"
 
       # update mmc_seed_part and mmc_boot_part from uc.lst
       mmc_seed_part="$(grep mmc_seed_part "${CRAFT_STAGE}/blobs/uc.lst" | sed -e 's/^# //')"
