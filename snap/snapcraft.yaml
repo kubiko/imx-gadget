@@ -196,12 +196,12 @@ parts:
       - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
     override-build: |
       # copy in place dtsi with pub part of kernel signing key
-      cp -f "${CRAFT_STAGE}/keys/u-boot-pubkey.dtsi" \
-            "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-pubkey.dtsi"
+      cp -f "${CRAFT_STAGE}/keys/u-boot-fit-pubkey.dtsi" \
+            "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-fit-pubkey.dtsi"
       # TODO: REPLACE: if this is ODM gadget use true ODM key dtsi
       # If dtb signing key is not needed, set the same key as u-boot-pubkey
-      cp -f "${CRAFT_STAGE}/keys/u-boot-dtb-pubkey.dtsi" \
-            "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-dtb-pubkey.dtsi"
+      cp -f "${CRAFT_STAGE}/keys/u-boot-fit-pubkey-vendor.dtsi" \
+            "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-fit-pubkey-vendor.dtsi"
       # TODO: REPLACE: replace with true  production Platform Key!
       cp -f "${CRAFT_STAGE}/keys/PK.auth" \
             "${CRAFT_PART_BUILD}/arch/arm/dts/PK.auth"
