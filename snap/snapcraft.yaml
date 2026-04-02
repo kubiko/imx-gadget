@@ -3,7 +3,7 @@ summary: NXP i.MX8M Mini EVK support package
 description: |
  Support files for booting i.MX8M Mini EVK board
 
-version: 24-8-6.18.2-1.0.0
+version: 24-9-6.18.2-1.0.0
 type: gadget
 
 base: core24
@@ -189,7 +189,7 @@ parts:
     plugin: nil
     source: https://git.launchpad.net/~ondrak/+git/u-boot
     source-type: git
-    source-tag: lf-6.18.2-1.0.0-uc
+    source-branch: lf_v2025.04
     source-depth: 1
     build-environment:
       - CC: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc"
@@ -198,9 +198,11 @@ parts:
       # copy in place dtsi with pub part of kernel signing key
       cp -f "${CRAFT_STAGE}/keys/u-boot-fit-pubkey.dtsi" \
             "${CRAFT_PART_BUILD}/arch/arm/dts/u-boot-fit-pubkey.dtsi"
-      # TODO: REPLACE: replace with true  production Platform Key!
-      cp -f "${CRAFT_STAGE}/keys/PK.auth" \
-            "${CRAFT_PART_BUILD}/arch/arm/dts/PK.auth"
+
+      # preseed EFI keys
+      python3 "${CRAFT_PART_BUILD}/tools/efivar.py" set -i ubootefi.var -n pk  -d "${CRAFT_STAGE}/keys/PK.esl"  -t file
+      python3 "${CRAFT_PART_BUILD}/tools/efivar.py" set -i ubootefi.var -n kek -d "${CRAFT_STAGE}/keys/KEK.esl" -t file
+      python3 "${CRAFT_PART_BUILD}/tools/efivar.py" set -i ubootefi.var -n db  -d "${CRAFT_STAGE}/keys/db.esl"  -t file
 
       # update mmc_seed_part and mmc_boot_part from uc.lst
       mmc_seed_part="$(grep mmc_seed_part "${CRAFT_STAGE}/blobs/uc.lst" | sed -e 's/^# //')"
