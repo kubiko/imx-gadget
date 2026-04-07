@@ -3,7 +3,7 @@ summary: NXP i.MX8M Mini EVK support package
 description: |
  Support files for booting i.MX8M Mini EVK board
 
-version: 24-9-6.18.2-1.0.0
+version: 24-10-6.18.2-1.0.0
 type: gadget
 
 base: core24
@@ -449,6 +449,7 @@ build-packages:
   - pkgconf
   - python3
   - python3-cryptography
+  - python3-openssl
   - python3-pycryptodome
   - python3-pyelftools
   - wget
