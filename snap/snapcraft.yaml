@@ -30,8 +30,8 @@ apps:
       - tee
 
   p11-kit-servers:
-    command: usr/bin/p11-kit-servers start
-    stop-command: usr/bin/p11-kit-servers stop
+    command: usr/bin/p11-manager start --provider optee:libckteec.so
+    stop-command: usr/bin/p11-manager stop
     daemon: forking
     after:
       - tee-supplicant
@@ -437,6 +437,23 @@ parts:
     source: p11-kit-helpers
     organize :
       '*': usr/bin/
+
+  p11-manager:
+    plugin: rust
+    source: p11-manager
+    source-type: local
+    build-environment:
+      - CARGO_BUILD_TARGET: "aarch64-unknown-linux-gnu"
+      - CARGO_TARGET_AARCH64_UNKNOWN_LINUX_GNU_LINKER: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc"
+      - CC_aarch64_unknown_linux_gnu: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc"
+    rust-channel: stable
+    rust-cargo-parameters:
+      - "--target aarch64-unknown-linux-gnu"
+    organize:
+      bin: usr/bin
+
+build-snaps:
+  - rustup
 
 build-packages:
   - bison
