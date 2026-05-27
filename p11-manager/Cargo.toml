@@ -1,0 +1,21 @@
+[package]
+name = "p11-manager"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.95"
+description = "Helper to start P11 kit server instances"
+
+[[bin]]
+name = "p11-manager"
+path = "p11-manager.rs"
+
+[build]
+target = "aarch64-unknown-linux-gnu"
+
+[dependencies]
+
+[profile.release]
+opt-level = "z"     # Optimize aggressively for binary size
+codegen-units = 1   # Reduce parallel code generation blocks to optimize harder
+panic = "abort"     # Remove stack-unwinding code on panic (saves huge space)
+strip = true        # Strip symbols and debug info automatically
