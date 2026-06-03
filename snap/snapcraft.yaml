@@ -3,7 +3,7 @@ summary: NXP i.MX8M Mini EVK support package
 description: |
  Support files for booting i.MX8M Mini EVK board
 
-version: 24-10-6.18.2-1.0.0
+version: 24-11-6.18.2-1.0.0
 type: gadget
 
 base: core24
@@ -15,6 +15,10 @@ platforms:
 
 confinement: strict
 grade: stable
+
+# Min version to support ubootpart
+assumes:
+  - snapd2.76
 
 environment:
   LD_LIBRARY_PATH: ${SNAP}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
