@@ -100,7 +100,7 @@ parts:
 
   optee-os:
     after:
-      - optee-fde
+      - optee-uc-fde
       - dev-pub-keys
     plugin: nil
     source: https://github.com/nxp-imx/imx-optee-os.git
@@ -132,8 +132,8 @@ parts:
       - PYTHONIOENCODING: utf-8
       - TA_PUBLIC_KEY: "${CRAFT_STAGE}/keys/ta_public.pem"
     override-build: |
-      # add optee-fde TA
-      cp -r "${CRAFT_STAGE}/optee-fde/ta/fde_key_handler" "${CRAFT_PART_BUILD}/ta"
+      # add optee-uc-fde TA
+      cp -r "${CRAFT_STAGE}/optee-uc-fde/ta/fde_key_handler" "${CRAFT_PART_BUILD}/ta"
       export OPTEE_VERSION=$(head -1 CHANGELOG.md  | sed 's/# OP-TEE - version \(.*\) (.*/\1/g')-imx
       make O="${CRAFT_PART_BUILD}/out" -j$(nproc)
       # build again with early TAs
@@ -165,19 +165,33 @@ parts:
       - LIBDIR="/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}"
       - PKG_CONFIG=pkg-config
       - PKG_CONFIG_PATH="/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}/pkgconfig"
-    stage:
+    prime:
       - usr/sbin
       - usr/lib/*/lib*so*
 
-  optee-fde:
+  optee-uc-fde:
     plugin: dump
-    source: https://github.com/canonical/optee-uc-fde.git
+    source: https://github.com/kubiko/optee-uc-fde.git
     source-type: git
-    source-branch: master
+    source-branch: add-rsa
     organize:
-      '*': optee-fde/
+      '*': optee-uc-fde/
     prime:
       - -*
+
+  optee-rsa-client:
+    after:
+      - optee-client
+      - optee-uc-fde
+    plugin: nil
+    build-environment:
+      - ARCH: "${CRAFT_ARCH_BUILD_FOR}"
+      - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
+      - OPTEE_CLIENT_EXPORT: "${CRAFT_STAGE}/usr"
+      - DESTDIR: "${CRAFT_PART_INSTALL}"
+    override-build: |
+      make -C ${CRAFT_STAGE}/optee-uc-fde O=${CRAFT_PART_BUILD}/out rsa-key-manager
+      make -C ${CRAFT_STAGE}/optee-uc-fde O=${CRAFT_PART_BUILD}/out rsa-key-manager install
 
   u-boot:
     after:
@@ -472,6 +486,7 @@ build-packages:
   - on amd64:
     - gcc-${CRAFT_ARCH_TRIPLET_BUILD_FOR}
     - libc6-dev-${CRAFT_ARCH_BUILD_FOR}-cross
+    - libjson-c-dev:${CRAFT_ARCH_BUILD_FOR}
     - uuid-dev:${CRAFT_ARCH_BUILD_FOR}
     - uuid-dev
   - on arm64:
