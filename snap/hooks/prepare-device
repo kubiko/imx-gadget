@@ -18,4 +18,10 @@
 # api_key=""
 
 # snapctl set device-service="{\"url\": \"$model_service_url\", \"headers\": { \"api-key\": \"${api_key}\" }}"
+
+# If hardware-observe is not connected, fail as we have serial number
+if ! snapctl is-connected hardware-observe; then
+  exit 1
+fi
+
 snapctl set registration.proposed-serial="$(cat /sys/devices/soc0/serial_number)"
