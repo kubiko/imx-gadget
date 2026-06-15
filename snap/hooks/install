@@ -9,3 +9,6 @@ snapctl mount \
         "/dev/disk/by-partlabel/tee-storage" \
         "${SNAP_COMMON}/tee-storage" \
         || true
+
+# Start service to generate device
+snapctl start "${SNAP_INSTANCE_NAME}.generate-hw-id-key" || true &

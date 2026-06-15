@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Helper script to generate device unique RSA key pair, derived from hashed CPU id
+# Hashed CPU id serves as seed to the key derivation which is HUK, TA bound
+
+# get CPU id hash and pass it to the rsa key manager
+cpu_id_sha=$(sha512sum  /sys/devices/soc0/serial_number | awk '{print $1}')
+hw_id_pub_key=$(${SNAP}/usr/bin/rsa-key-manager \
+                                     --action get-pubkey \
+                                     --algo rsa \
+                                     --key-size 2048 \
+                                     --seed-hex "${cpu_id_sha}")
+
+if [ -n "${hw_id_pub_key}" ]; then
+  snapctl set registration.device-hw-id-key="${hw_id_pub_key}"
+fi
