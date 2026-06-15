@@ -1,0 +1,6 @@
+#!/bin/sh
+
+# if tee is connected, generate hw id key
+if snapctl is-connected tee; then
+  snapctl start "${SNAP_INSTANCE_NAME}.generate-hw-id-key" || true &
+fi
