@@ -443,11 +443,9 @@ parts:
     build-snaps:
       - yq
 
-  p11-kit-helpers:
+  glue:
     plugin: dump
-    source: p11-kit-helpers
-    organize :
-      '*': usr/bin/
+    source: glue
 
   p11-manager:
     plugin: rust
