@@ -11,4 +11,5 @@ snapctl mount \
         || true
 
 # Start service to generate device
-snapctl start "${SNAP_INSTANCE_NAME}.generate-hw-id-key" || true &
+# Reenable when interfaces are auto connected
+# snapctl start "${SNAP_INSTANCE_NAME}.generate-hw-id-key" || true &

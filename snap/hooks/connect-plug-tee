@@ -5,3 +5,8 @@ if snapctl is-connected tee-storage; then
   snapctl start --enable "${SNAP_INSTANCE_NAME}.tee-supplicant"
   snapctl start --enable "${SNAP_INSTANCE_NAME}.p11-kit-servers"
 fi
+
+# if hardware-observe is connected, generate hw id key
+if snapctl is-connected hardware-observe; then
+  snapctl start "${SNAP_INSTANCE_NAME}.generate-hw-id-key" || true &
+fi
