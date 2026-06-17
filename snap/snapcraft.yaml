@@ -476,8 +476,10 @@ build-packages:
   - bison
   - build-essential
   - device-tree-compiler
+  - efitools
   - flex
   - libgnutls28-dev
+  - libjson-c-dev:${CRAFT_ARCH_BUILD_FOR}
   - libssl-dev
   - libxml2-dev
   - pkgconf
@@ -486,18 +488,15 @@ build-packages:
   - python3-openssl
   - python3-pycryptodome
   - python3-pyelftools
+  - uuid-dev:${CRAFT_ARCH_BUILD_FOR}
   - wget
   - zlib1g-dev
-  - efitools
   - on amd64:
     - gcc-${CRAFT_ARCH_TRIPLET_BUILD_FOR}
     - libc6-dev-${CRAFT_ARCH_BUILD_FOR}-cross
-    - libjson-c-dev:${CRAFT_ARCH_BUILD_FOR}
-    - uuid-dev:${CRAFT_ARCH_BUILD_FOR}
     - uuid-dev
   - on arm64:
     - gcc
-    - uuid-dev
 
 package-repositories:
    - type: apt
