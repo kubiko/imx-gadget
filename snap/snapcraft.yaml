@@ -3,7 +3,7 @@ summary: NXP i.MX8M Mini EVK support package
 description: |
  Support files for booting i.MX8M Mini EVK board
 
-version: 24-11-6.18.2-1.0.0
+version: 24-12-6.18.20-2.0.0
 type: gadget
 
 base: core24
@@ -60,7 +60,7 @@ parts:
     plugin: nil
     source: https://github.com/nxp-imx/imx-atf.git
     source-type: git
-    source-tag: lf-6.18.2-1.0.0
+    source-tag: lf-6.18.20-2.0.0
     source-depth: 1
     build-environment:
       - PLAT: "imx8mm"
@@ -103,7 +103,7 @@ parts:
     plugin: nil
     source: https://github.com/nxp-imx/imx-optee-os.git
     source-type: git
-    source-tag: lf-6.18.2-1.0.0
+    source-tag: lf-6.18.20-2.0.0
     source-depth: 1
     build-environment:
       - ARCH: "arm"
@@ -198,7 +198,7 @@ parts:
     plugin: nil
     source: https://git.launchpad.net/~ondrak/+git/u-boot
     source-type: git
-    source-branch: lf_v2025.04
+    source-branch: lf_v2026.04
     source-depth: 1
     build-environment:
       - CC: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc"
@@ -219,11 +219,11 @@ parts:
       sed -i \
           -e 's/mmc_seed_part=\(.*\)/'"${mmc_seed_part}"'/g' \
           -e 's/mmc_boot_part=\(.*\)/'"${mmc_boot_part}"'/g' \
-          "${CRAFT_PART_BUILD}/board/freescale/imx8mm_evk/imx8mm_evk.env"
+          "${CRAFT_PART_BUILD}/board/nxp/imx8mm_evk/imx8mm_evk.env"
 
       # Add GIT revision to the local version
       head=$(git rev-parse --verify --short HEAD 2> /dev/null)
-      imx_version=$(git describe --tags | cut -c 4-)
+      imx_version=$(git describe --tags | cut -c 4- || true)
       printf "%s%s%s" "-${imx_version}" "+g" "${head}" > .scmversion
 
       make imx8mm_evk_config
@@ -257,7 +257,7 @@ parts:
     override-pull: |
       # latest firmware version can be found in
       # https://github.com/nxp-imx/meta-imx/ -b <relevant release> in SCR-<release version>.txt
-      firmware_version="8.31-4fa5b46"
+      firmware_version="8.32-1991416"
       wget https://www.nxp.com/lgfiles/NMG/MAD/YOCTO/firmware-imx-${firmware_version}.bin \
         -O firmware-imx.bin
     override-build: |
@@ -276,7 +276,7 @@ parts:
     plugin: nil
     source: https://github.com/nxp-imx/imx-mkimage.git
     source-type: git
-    source-tag: lf-6.18.2-1.0.0
+    source-tag: lf-6.18.20-2.0.0
     source-depth: 1
     override-build: |
       platform="imx8mm"
