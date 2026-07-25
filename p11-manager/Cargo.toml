@@ -9,9 +9,6 @@ description = "Helper to start P11 kit server instances"
 name = "p11-manager"
 path = "p11-manager.rs"
 
-[build]
-target = "aarch64-unknown-linux-gnu"
-
 [dependencies]
 
 [profile.release]
