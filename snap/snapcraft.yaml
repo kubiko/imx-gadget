@@ -126,7 +126,8 @@ parts:
       - PLATFORM_FLAVOR: "mx8mmevk"
       - PYTHON: "/usr/bin/python3"
       - PYTHONHOME: "/usr"
-      - PYTHONPATH: "/usr/lib/python3.12:/usr/lib/python3.12/lib-dynload:/usr/lib/python3/dist-packages"
+      - PYTHON_VERSION: $(python3 -c 'import sysconfig; print(sysconfig.get_python_version())')
+      - PYTHONPATH: /usr/lib/python${PYTHON_VERSION}:/usr/lib/python${PYTHON_VERSION}/lib-dynload:/usr/lib/python3/dist-packages
       - PYTHONIOENCODING: utf-8
       - TA_PUBLIC_KEY: "${CRAFT_STAGE}/keys/ta_public.pem"
     override-build: |
