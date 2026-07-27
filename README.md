@@ -1,6 +1,6 @@
-# i.MX91 evk Gadget Snap
+# i.MX91 FRDM Gadget Snap
 
-This repository contains the Ubuntu Core gadget snap for the i.MX91 Eval Kit
+This repository contains the Ubuntu Core gadget snap for the i.MX91 FRDM board
 
 ## Gadget Snaps
 
