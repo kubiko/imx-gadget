@@ -282,6 +282,57 @@ parts:
     prime:
       - -*
 
+  imx-oei:
+    plugin: nil
+    source: https://github.com/nxp-imx/imx-oei.git
+    source-type: git
+    source-tag: lf-6.18.37-2.1.0
+    source-depth: 1
+    build-environment:
+      - OEI_BOARD: "mx95lp5"
+      - OEI_DDR_CONFIG: "MIMX95_LPDDR5_EVK_19X19_6400MTS_FW2024.09_timing"
+      - SOC_REV: "B0"
+    override-build: |
+      make \
+        board=${OEI_BOARD} \
+        oei=ddr \
+        r=${SOC_REV} \
+        DDR_CONFIG=${OEI_DDR_CONFIG} \
+        DEBUG=1 \
+        OEI_CROSS_COMPILE=arm-none-eabi- \
+        clean
+      make \
+        board=${OEI_BOARD} \
+        oei=ddr \
+        r=${SOC_REV} \
+        DDR_CONFIG=${OEI_DDR_CONFIG} \
+        DEBUG=1 \
+        OEI_CROSS_COMPILE=arm-none-eabi- \
+        -j${CRAFT_PARALLEL_BUILD_COUNT}
+      install -m 644 "${CRAFT_PART_BUILD}/build/${OEI_BOARD}/ddr/oei-m33-ddr.bin" \
+                     "${CRAFT_PART_INSTALL}/oei-m33-ddr.bin"
+    prime:
+      - -*
+
+  imx-system-manager:
+    plugin: nil
+    source: https://github.com/nxp-imx/imx-sm.git
+    source-type: git
+    source-tag: lf-6.18.37-2.1.0
+    source-depth: 1
+    build-environment:
+      - SM_CONFIG: "mx95evk"
+    override-build: |
+      make \
+        config=${SM_CONFIG} \
+        SM_CROSS_COMPILE=arm-none-eabi- \
+        M=2 \
+        all
+      install -m 644 "${CRAFT_PART_BUILD}/build/${SM_CONFIG}/m33_image.bin" \
+                     "${CRAFT_PART_INSTALL}/m33_image.bin"
+    prime:
+      - -*
+
   imx-boot:
     after:
       - arm-trusted-firmware
@@ -480,8 +531,10 @@ build-packages:
   - device-tree-compiler
   - efitools
   - flex
+  - gcc-arm-none-eabi
   - libgnutls28-dev
   - libjson-c-dev:${CRAFT_ARCH_BUILD_FOR}
+  - libnewlib-arm-none-eabi
   - libssl-dev
   - libxml2-dev
   - pkgconf
