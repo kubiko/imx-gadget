@@ -1,6 +1,6 @@
-# i.MX95 evk Gadget Snap
+# i.MX95 FRDM Pro Gadget Snap
 
-This repository contains the Ubuntu Core gadget snap for the i.MX95 19x19 Eval Kit
+This repository contains the Ubuntu Core gadget snap for the i.MX95 FRDM Pro Development Board
 
 ## Gadget Snaps
 
