@@ -338,6 +338,8 @@ parts:
       - arm-trusted-firmware
       - imx-firmware
       - imx-firmware-ele
+      - imx-oei
+      - imx-system-manager
       - optee-os
       - u-boot
     plugin: nil
@@ -346,21 +348,29 @@ parts:
     source-tag: lf-6.18.37-2.1.0
     source-depth: 1
     override-build: |
-      platform="imx93"
-      soc_family="iMX93"
+      platform="imx95"
+      soc_family="iMX95"
+      soc_rev="B0"
       # firmware files
-      for ddr_firmware in lpddr4_imem_1d_v202201.bin \
-                          lpddr4_dmem_1d_v202201.bin \
-                          lpddr4_imem_2d_v202201.bin \
-                          lpddr4_dmem_2d_v202201.bin
+      for ddr_firmware in lpddr5_imem_v202409.bin \
+                          lpddr5_dmem_v202409.bin \
+                          lpddr5_imem_qb_v202409.bin \
+                          lpddr5_dmem_qb_v202409.bin
       do
         cp -f "${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware}" \
               "${CRAFT_PART_BUILD}/${soc_family}"
       done
 
       # ele firmware
-      cp -f "${CRAFT_STAGE}/mx93a1-ahab-container.img" \
+      cp -f "${CRAFT_STAGE}/mx95$(echo ${soc_rev} | tr 'A-Z' 'a-z')-ahab-container.img" \
             "${CRAFT_PART_BUILD}/${soc_family}"
+
+      # oei and system manager
+      for bin in oei-m33-ddr.bin m33_image.bin
+      do
+        cp -f "${CRAFT_STAGE}/${bin}" \
+              "${CRAFT_PART_BUILD}/${soc_family}"
+      done
 
       # atf
       cp -f "${CRAFT_STAGE}/bl31-${platform}.bin-optee" \
@@ -377,7 +387,7 @@ parts:
               "${CRAFT_PART_BUILD}/${soc_family}"
       done
 
-      make SOC=iMX93 REV=A1 TEE=tee.bin dtbs=imx93-11x11-evk.dtb flash_singleboot
+      make SOC=iMX95 REV=${soc_rev} OEI=YES LPDDR_TYPE=lpddr5 TEE=tee.bin flash_a55
 
       install -m 644 -D "${CRAFT_PART_BUILD}/${soc_family}/flash.bin" \
                         "${CRAFT_PART_INSTALL}/blobs/imx-boot.bin"
