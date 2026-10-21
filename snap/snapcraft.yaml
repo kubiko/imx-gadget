@@ -353,7 +353,7 @@ parts:
     source-tag: lf-6.18.37-2.1.0
     source-depth: 1
     build-environment:
-      - SM_CONFIG: "mx95evk"
+      - SM_CONFIG: "mx95frdm"
     override-build: |
       make \
         config=${SM_CONFIG} \
