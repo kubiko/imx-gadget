@@ -383,7 +383,7 @@ parts:
       platform="imx95"
       soc_family="iMX95"
       soc_rev="B0"
-      lpddr_type="lpddr5"
+      lpddr_type="lpddr4x"
       # firmware files
       for ddr_firmware in ${lpddr_type}_imem_v202409.bin \
                           ${lpddr_type}_dmem_v202409.bin \
