@@ -319,8 +319,8 @@ parts:
     source-tag: lf-6.18.37-2.1.0
     source-depth: 1
     build-environment:
-      - OEI_BOARD: "mx95lp5"
-      - OEI_DDR_CONFIG: "MIMX95_LPDDR5_EVK_19X19_6400MTS_FW2024.09_timing"
+      - OEI_BOARD: "mx95lp4x-15"
+      - OEI_DDR_CONFIG: "MIMX95_LPDDR4X_EVK_15X15_4000MTS_FW2024.09_timing"
       - SOC_REV: "B0"
     override-build: |
       make \
