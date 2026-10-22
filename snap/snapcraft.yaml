@@ -351,11 +351,12 @@ parts:
       platform="imx95"
       soc_family="iMX95"
       soc_rev="B0"
+      lpddr_type="lpddr5"
       # firmware files
-      for ddr_firmware in lpddr5_imem_v202409.bin \
-                          lpddr5_dmem_v202409.bin \
-                          lpddr5_imem_qb_v202409.bin \
-                          lpddr5_dmem_qb_v202409.bin
+      for ddr_firmware in ${lpddr_type}_imem_v202409.bin \
+                          ${lpddr_type}_dmem_v202409.bin \
+                          ${lpddr_type}_imem_qb_v202409.bin \
+                          ${lpddr_type}_dmem_qb_v202409.bin
       do
         cp -f "${CRAFT_STAGE}/firmware/ddr/synopsys/${ddr_firmware}" \
               "${CRAFT_PART_BUILD}/${soc_family}"
@@ -387,7 +388,7 @@ parts:
               "${CRAFT_PART_BUILD}/${soc_family}"
       done
 
-      make SOC=iMX95 REV=${soc_rev} OEI=YES LPDDR_TYPE=lpddr5 TEE=tee.bin flash_a55
+      make SOC=iMX95 REV=${soc_rev} OEI=YES LPDDR_TYPE=${lpddr_type} TEE=tee.bin flash_a55
 
       install -m 644 -D "${CRAFT_PART_BUILD}/${soc_family}/flash.bin" \
                         "${CRAFT_PART_INSTALL}/blobs/imx-boot.bin"
