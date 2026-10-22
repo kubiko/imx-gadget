@@ -282,7 +282,37 @@ parts:
     prime:
       - -*
 
+  arm-gnu-toolchain: # Cortex-M toolchain for imx-oei and imx-system-manager
+    plugin: nil
+    override-pull: |
+      # version and checksums pinned by meta-imx -b <relevant release>
+      # recipes-devtools/external-arm-toolchain/gcc-arm-none-eabi_<version>.bb
+      # imx-system-manager built with distro gcc-arm-none-eabi does not boot
+      toolchain_version="15.2.rel1"
+      case ${CRAFT_ARCH_BUILD_ON} in
+        amd64)
+          host_arch="x86_64"
+          sha256="597893282ac8c6ab1a4073977f2362990184599643b4c5ee34870a8215783a16"
+          ;;
+        arm64)
+          host_arch="aarch64"
+          sha256="d061559d814b205ed30c5b7c577c03317ec447ca51cd5a159d26b12a5bbeb20c"
+          ;;
+      esac
+      wget https://developer.arm.com/-/media/Files/downloads/gnu/${toolchain_version}/binrel/arm-gnu-toolchain-${toolchain_version}-${host_arch}-arm-none-eabi.tar.xz \
+        -O arm-gnu-toolchain.tar.xz
+      echo "${sha256}  arm-gnu-toolchain.tar.xz" | sha256sum -c
+    override-build: |
+      mkdir -p "${CRAFT_PART_INSTALL}/arm-gnu-toolchain"
+      tar -xf "${CRAFT_PART_BUILD}/arm-gnu-toolchain.tar.xz" \
+          --strip-components=1 \
+          -C "${CRAFT_PART_INSTALL}/arm-gnu-toolchain"
+    prime:
+      - -*
+
   imx-oei:
+    after:
+      - arm-gnu-toolchain
     plugin: nil
     source: https://github.com/nxp-imx/imx-oei.git
     source-type: git
@@ -299,7 +329,7 @@ parts:
         r=${SOC_REV} \
         DDR_CONFIG=${OEI_DDR_CONFIG} \
         DEBUG=1 \
-        OEI_CROSS_COMPILE=arm-none-eabi- \
+        OEI_CROSS_COMPILE="${CRAFT_STAGE}/arm-gnu-toolchain/bin/arm-none-eabi-" \
         clean
       make \
         board=${OEI_BOARD} \
@@ -307,7 +337,7 @@ parts:
         r=${SOC_REV} \
         DDR_CONFIG=${OEI_DDR_CONFIG} \
         DEBUG=1 \
-        OEI_CROSS_COMPILE=arm-none-eabi- \
+        OEI_CROSS_COMPILE="${CRAFT_STAGE}/arm-gnu-toolchain/bin/arm-none-eabi-" \
         -j${CRAFT_PARALLEL_BUILD_COUNT}
       install -m 644 "${CRAFT_PART_BUILD}/build/${OEI_BOARD}/ddr/oei-m33-ddr.bin" \
                      "${CRAFT_PART_INSTALL}/oei-m33-ddr.bin"
@@ -315,6 +345,8 @@ parts:
       - -*
 
   imx-system-manager:
+    after:
+      - arm-gnu-toolchain
     plugin: nil
     source: https://github.com/nxp-imx/imx-sm.git
     source-type: git
@@ -325,7 +357,7 @@ parts:
     override-build: |
       make \
         config=${SM_CONFIG} \
-        SM_CROSS_COMPILE=arm-none-eabi- \
+        SM_CROSS_COMPILE="${CRAFT_STAGE}/arm-gnu-toolchain/bin/arm-none-eabi-" \
         M=2 \
         all
       install -m 644 "${CRAFT_PART_BUILD}/build/${SM_CONFIG}/m33_image.bin" \
@@ -555,10 +587,8 @@ build-packages:
   - device-tree-compiler
   - efitools
   - flex
-  - gcc-arm-none-eabi
   - libgnutls28-dev
   - libjson-c-dev:${CRAFT_ARCH_BUILD_FOR}
-  - libnewlib-arm-none-eabi
   - libssl-dev
   - libxml2-dev
   - pkgconf
