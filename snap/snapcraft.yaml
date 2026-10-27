@@ -329,67 +329,54 @@ parts:
   flash-script: # uuu flash script
     plugin: nil
     override-build: |
-      # get seed offset and size from gadget yaml
-      convert_size() {
-      case $1 in
-        (0)  seed_size="0" ;;
-        (*G | *g) echo $(expr $(echo $1 | sed -e 's/G//g' -e 's/g//g') \* 1024 \* 1024 \* 1024) ;;
-        (*M | *m) echo $(expr $(echo $1 | sed -e 's/M//g' -e 's/m//g') \* 1024 \* 1024) ;;
-        (*K | *k) echo $(expr $(echo $1 | sed -e 's/K//g' -e 's/k//g') \* 1024) ;;
-        (*) echo ${1} ;;
-      esac
+      # The uuu flash script is generated from gadget.yaml: partition table,
+      # partitions to flash and the partition numbers u-boot is built with.
+      to_bytes() {
+        case "${1}" in
+          *[Gg]) echo $(( ${1%?} * 1024 * 1024 * 1024 )) ;;
+          *[Mm]) echo $(( ${1%?} * 1024 * 1024 )) ;;
+          *[Kk]) echo $(( ${1%?} * 1024 )) ;;
+          *)     echo $(( ${1} )) ;;
+        esac
       }
 
       # avoid confinement for yq as we might run as root
       yq="/snap/yq/current/bin/yq"
-      # read all the partitions before ubuntu-boot and include those in the created part table
-      # additionally calculate part number for seed and boot, we need those for u-boot build
-      gpt_partitions="uuid_disk=\${uuid_gpt_disk}"
-      part_number=0
-      # this is good opportunity to validate offset of the partitions, if defined
-      # it saves us from failed boot
-      # default 1st partition offset is 1MB, unless defined otherwise
-      partition_offset=0
-      unset mmc_boot_part mmc_seed_part
-      for p in $(${yq} eval '.volumes.["emmc-uda"].structure.[].name' ${CRAFT_PROJECT_DIR}/gadget.yaml)
-      do
-      # ignore bare structures
-      if [ "${p}" != "null" ]; then
-        part_number=$((part_number+1))
-        # only read till ubuntu-boot partition
-        if [ "${p}" == "ubuntu-boot" ]; then
-          mmc_boot_part="${part_number}"
-        fi
-        if [ "${p}" == "ubuntu-seed" ]; then
-          mmc_seed_part="${part_number}"
-        fi
+      gadget="${CRAFT_PROJECT_DIR}/gadget.yaml"
 
-        # include partitions in the list
-        export p=${p}
-        p_offset=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .offset' "${CRAFT_PROJECT_DIR}/gadget.yaml")
-        p_size=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .size' "${CRAFT_PROJECT_DIR}/gadget.yaml")
-        p_type=$(${yq} eval '.volumes.[].structure.[] | select(.name == env(p)) | .type' "${CRAFT_PROJECT_DIR}/gadget.yaml")
-        p_size=$(convert_size ${p_size})
-        gpt_partitions="${gpt_partitions};name=${p},size=${p_size},start=${p_offset},type=${p_type}"
-        if [ "${partition_offset}" == "0" ]; then
-          # first partion, if there no offset defined, use default 1MB (1048576)
-          if [ -n "${p_offset}" ] && [ "${p_offset}" != "null" ]; then
-            partition_offset=${p_offset}
-          else
-            partition_offset=1048576
+      gpt_partitions="uuid_disk=\${uuid_gpt_disk}"
+      part_numbers=()
+      part_number=0
+      next_offset=""
+      # one line per partition: name offset size type; bare structures
+      # have no name and are not part of the partition table
+      while read -r p_name p_offset p_size p_type; do
+        part_number=$((part_number+1))
+        p_size=$(to_bytes "${p_size}")
+        # validate offsets, it saves us from failed boot; an offset may be left
+        # out, the first partition then starts at 1MB, the others follow on
+        if [ "${p_offset}" = "null" ]; then
+          p_offset=${next_offset:-1048576}
+        else
+          p_offset=$(to_bytes "${p_offset}")
+          if [ -n "${next_offset}" ] && [ "${p_offset}" != "${next_offset}" ]; then
+            echo "Unexpected offset for partition ${p_name}, defined: ${p_offset}, expected: ${next_offset}"
+            exit 1
           fi
         fi
-        if [ "${p_offset}" != "${partition_offset}" ]; then
-          echo "Unexpected offset for partition ${p}, defined: ${p_offset}, expected: ${partition_offset}"
-          exit 1
-        else
-          echo "Validated offset for partition ${p}, offset: ${p_offset}"
-        fi
-        # calculate next offset
-        partition_offset=$((partition_offset+p_size))
-        unset p
-      fi
-      done
+        echo "Validated offset for partition ${p_name}, offset: ${p_offset}"
+        gpt_partitions="${gpt_partitions};name=${p_name},size=${p_size},start=${p_offset},type=${p_type}"
+        next_offset=$((p_offset+p_size))
+
+        # partition number variables for the u-boot env, e.g.
+        # ubuntu-seed: mmc_seed_part, ubuntu-system-a: mmc_system_part_a
+        p_var="${p_name#ubuntu-}"
+        case "${p_var}" in
+          *-a|*-b) p_var="mmc_${p_var%-?}_part_${p_var##*-}" ;;
+          *)       p_var="mmc_${p_var}_part" ;;
+        esac
+        part_numbers+=("# ${p_var//-/_}=${part_number}")
+      done < <(${yq} eval '.volumes["emmc-uda"].structure[] | select(.name != null) | [.name, .offset // "null", .size, .type] | join(" ")' "${gadget}")
 
       cat << EOF > "${CRAFT_PART_INSTALL}/uc.lst"
       uuu_version 1.4.69
@@ -424,9 +411,8 @@ parts:
       FB: flash bootloader  imx-boot.bin
 
       # create new partition table
-      # boot critical partition number (used for u-boot build config)
-      # mmc_boot_part=${mmc_boot_part}
-      # mmc_seed_part=${mmc_seed_part}
+      # partition numbers (boot critical ones are used for u-boot build config)
+      $(printf '%s\n' "${part_numbers[@]}")
       FB: ucmd setenv partitions '${gpt_partitions}'
       FB: ucmd gpt write mmc \${emmc_dev} \${partitions}
 
@@ -436,7 +422,7 @@ parts:
       FB: ucmd mmc dev \${emmc_dev}
 
       # Flashing partitions, use timeout 20s
-      FB: ucmd echo "If ubuntu-seed, partner or ubuntu-seed  partitions do not exist, powercycle the device"
+      FB: ucmd echo "If ubuntu-seed, partner or tee-storage partitions do not exist, powercycle the device"
       FB: flash ubuntu-boot-state ubuntu-boot-state.img
       FB: flash partner partner.img
       FB: flash tee-storage tee-storage.img
