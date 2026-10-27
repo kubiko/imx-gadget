@@ -655,6 +655,10 @@ parts:
       . /etc/os-release
       craftctl set version="${VERSION_ID%%.*}-mini-17-6.18.37-2.1.0"
 
+  device-config:
+    plugin: dump
+    source: device-config
+
 build-snaps:
   - rustup
   - yq
@@ -714,14 +718,6 @@ plugs:
         - ext4
       options:
         - rw
-  load-wifi-module:
-    interface: kernel-module-load
-    modules:
-      - name: moal
-        load: on-boot
-        options: mod_para=nxp/wifi_mod_para.conf
-      - name: btnxpuart
-        load: denied
   # the EdgeLock Enclave's HSM interface, of the gadget's own ele-hsm-device
   # slot: snap connect <gadget>:ele-hsm <gadget>:ele-hsm-device
   ele-hsm:
