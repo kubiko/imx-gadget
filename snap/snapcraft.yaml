@@ -495,6 +495,10 @@ parts:
       . /etc/os-release
       craftctl set version="${VERSION_ID%%.*}-mini-15-6.18.37-2.1.0"
 
+  device-config:
+    plugin: dump
+    source: device-config
+
 build-snaps:
   - rustup
   - yq
