@@ -6,7 +6,7 @@ description: |
 adopt-info: version
 type: gadget
 
-base: core26
+base: core24
 
 platforms:
   arm64:
@@ -513,7 +513,7 @@ package-repositories:
      architectures: [$CRAFT_ARCH_BUILD_FOR]
      formats: [deb, deb-src]
      components: [main]
-     suites: [resolute, resolute-updates, resolute-backports]
+     suites: [noble, noble-updates, noble-backports]
      key-id: F6ECB3762474EDA9D21B7022871920D1991BC93C
      url: http://ports.ubuntu.com/ubuntu-ports
 
