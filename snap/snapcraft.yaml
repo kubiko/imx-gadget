@@ -451,8 +451,6 @@ parts:
       EOF
     organize:
       uc.lst: blobs/
-    build-snaps:
-      - yq
 
   glue:
     plugin: dump
@@ -478,10 +476,11 @@ parts:
       # The series prefix comes from the build base, so 24/* and 26/* branches
       # share this line and only differ in base: and the apt suites.
       . /etc/os-release
-      craftctl set version="${VERSION_ID%%.*}-14-6.18.37-2.1.0"
+      craftctl set version="${VERSION_ID%%.*}-15-6.18.37-2.1.0"
 
 build-snaps:
   - rustup
+  - yq
 
 build-packages:
   - bison
