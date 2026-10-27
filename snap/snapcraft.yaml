@@ -346,11 +346,13 @@ parts:
 
       gpt_partitions="uuid_disk=\${uuid_gpt_disk}"
       part_numbers=()
+      flash_partitions=()
+      boot_state=""
       part_number=0
       next_offset=""
-      # one line per partition: name offset size type; bare structures
+      # one line per partition: name offset size type role; bare structures
       # have no name and are not part of the partition table
-      while read -r p_name p_offset p_size p_type; do
+      while read -r p_name p_offset p_size p_type p_role; do
         part_number=$((part_number+1))
         p_size=$(to_bytes "${p_size}")
         # validate offsets, it saves us from failed boot; an offset may be left
@@ -376,7 +378,19 @@ parts:
           *)       p_var="mmc_${p_var}_part" ;;
         esac
         part_numbers+=("# ${p_var//-/_}=${part_number}")
-      done < <(${yq} eval '.volumes["emmc-uda"].structure[] | select(.name != null) | [.name, .offset // "null", .size, .type] | join(" ")' "${gadget}")
+
+        # ubuntu-image provides an image for every partition, except those
+        # snapd creates at install; the boot state goes last, so the device
+        # only gets a fresh u-boot env once everything else is flashed
+        case "${p_role}" in
+          system-boot|system-save|system-data) ;;
+          system-boot-state) boot_state="${p_name}" ;;
+          *) flash_partitions+=("FB[-t 20000]: flash ${p_name} ${p_name}.img") ;;
+        esac
+      done < <(${yq} eval '.volumes["emmc-uda"].structure[] | select(.name != null) | [.name, .offset // "null", .size, .type, .role // "none"] | join(" ")' "${gadget}")
+      if [ -n "${boot_state}" ]; then
+        flash_partitions+=("FB: flash ${boot_state} ${boot_state}.img")
+      fi
 
       cat << EOF > "${CRAFT_PART_INSTALL}/uc.lst"
       uuu_version 1.4.69
@@ -422,11 +436,8 @@ parts:
       FB: ucmd mmc dev \${emmc_dev}
 
       # Flashing partitions, use timeout 20s
-      FB: ucmd echo "If ubuntu-seed, partner or tee-storage partitions do not exist, powercycle the device"
-      FB: flash ubuntu-boot-state ubuntu-boot-state.img
-      FB: flash partner partner.img
-      FB: flash tee-storage tee-storage.img
-      FB[-t 20000]: flash ubuntu-seed ubuntu-seed.img
+      FB: ucmd echo "If a partition to flash does not exist, powercycle the device and run uuu again"
+      $(printf '%s\n' "${flash_partitions[@]}")
       FB: done
       EOF
     organize:
