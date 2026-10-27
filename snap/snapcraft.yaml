@@ -392,6 +392,15 @@ parts:
         flash_partitions+=("FB: flash ${boot_state} ${boot_state}.img")
       fi
 
+      # when imx-boot lives in eMMC boot0 the boot config must select boot0,
+      # otherwise the ROM keeps booting whatever the board was set up with
+      boot_partconf=""
+      if [ -n "$(${yq} eval '.volumes["emmc-boot"].structure[] | select(.name == "boot0") | .content[] | select(.image == "blobs/imx-boot.bin") | .image' "${gadget}")" ]; then
+        boot_partconf="
+      FB: ucmd if env exists emmc_ack; then ; else setenv emmc_ack 0; fi;
+      FB: ucmd mmc partconf \${emmc_dev} \${emmc_ack} 1 0"
+      fi
+
       cat << EOF > "${CRAFT_PART_INSTALL}/uc.lst"
       uuu_version 1.4.69
 
@@ -422,7 +431,7 @@ parts:
       FB: ucmd setenv fastboot_dev mmc
       FB: ucmd setenv mmcdev \${emmc_dev}
       FB: ucmd mmc dev \${emmc_dev}
-      FB: flash bootloader  imx-boot.bin
+      FB: flash bootloader  imx-boot.bin${boot_partconf}
 
       # create new partition table
       # partition numbers (boot critical ones are used for u-boot build config)
