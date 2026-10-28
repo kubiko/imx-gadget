@@ -537,6 +537,11 @@ parts:
       . /etc/os-release
       craftctl set version="${VERSION_ID%%.*}-mini-16-6.18.37-2.1.0"
 
+  device-config:
+    plugin: nil
+    override-build: |
+      mkdir -p "${CRAFT_PART_INSTALL}/device-config"
+
 build-snaps:
   - rustup
   - yq
