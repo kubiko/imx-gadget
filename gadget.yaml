@@ -31,18 +31,22 @@ volumes:
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         size: 50M
       - name: ubuntu-system-a
+        role: system-slot-a
         offset: 126877696 # 0x4700000 + ubuntu-seed(0x3200000) = 0x7900000
         type: 20117F86-E985-4357-B9EE-374BC1D8487D
         size: 500M
       - name: ubuntu-system-b
+        role: system-slot-b
         offset: 651165696 # 0x7900000 + ubuntu-system-a(0x1F400000) = 0x26D00000
         type: 20117F86-E985-4357-B9EE-374BC1D8487D
         size: 500M
       - name: ubuntu-apps-a
+        role: apps-slot-a
         offset: 1175453696 # 0x26D00000 + ubuntu-system-b(0x1F400000) = 0x46100000
         type: 20117F86-E985-4357-B9EE-374BC1D8487D
         size: 500M
       - name: ubuntu-apps-b
+        role: apps-slot-b
         offset: 1699741696 # 0x46100000 + ubuntu-apps-a(0x1F400000) = 0x65500000
         type: 20117F86-E985-4357-B9EE-374BC1D8487D
         size: 500M
