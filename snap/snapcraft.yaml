@@ -166,6 +166,38 @@ parts:
       - CFG_LTO: "y"
       - CFG_TA_TEST: "n"
       - CFG_TA_BENCHMARK: "n"
+      # TA v2 keeps its counter in RPMB secure storage, which the kernel
+      # routes itself, so nothing in the initrd needs tee-supplicant
+      - CFG_RPMB_FS: "y"
+      - CFG_RPMB_ANNOUNCE_PROBE_CAP: "y"
+      # DEVELOPMENT ONLY: the RPMB key is OP-TEE's public test key. This
+      # build needs no RPMB key: with none programmed TA v2 runs without its
+      # counter. Programming the test key once, from the U-Boot console (see
+      # docs/optee-rpmb.md), turns the counter on with no rebuild. Anyone
+      # with root can then forge RPMB writes, so the counter is exercised,
+      # not secure. Production builds use the key derived from the HUK.
+      - CFG_RPMB_TESTKEY: "y"
+      # Roll-back protection of the REE FS ($SNAP_COMMON/tee-storage, where
+      # tee-supplicant keeps the pkcs11 tokens) anchors its dirf.db hash in
+      # RPMB, and every REE FS open fails with TEE_ERROR_ITEM_NOT_FOUND
+      # while no RPMB key is programmed. Off, so a board without the key
+      # keeps its pkcs11 tokens. Production builds set it to y.
+      - CFG_REE_FS_INTEGRITY_RPMB: "n"
+      # Takes effect only with CFG_REE_FS_INTEGRITY_RPMB: a reflash wipes
+      # tee-storage while its hash stays in RPMB; start a new, empty REE FS
+      # then instead of refusing it. Only a missing store is reset, an old
+      # one is still refused. Kept on so turning integrity on keeps a board
+      # safe to reflash.
+      - CFG_REE_FS_ALLOW_RESET: "y"
+      # OP-TEE does not program the RPMB key: with CFG_RPMB_WRITE_KEY it takes
+      # the legacy RPMB path, which only tee-supplicant serves, and the kernel
+      # waits for it without a timeout, so the first TA call of the boot that
+      # reaches RPMB hangs. Programming the key is a provisioning step of its
+      # own, see docs/optee-rpmb.md.
+      - CFG_RPMB_WRITE_KEY: "n"
+      # The FDE TA seals and unseals without the counter when RPMB is not
+      # usable from the start of the boot. Production builds set it to y.
+      - CFG_FDE_V2_REQUIRE_RPMB: "n"
       - CROSS_COMPILE: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
       - CROSS_COMPILE_core: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
       - CROSS_COMPILE_ta_arm64: "${CRAFT_ARCH_TRIPLET_BUILD_FOR}-"
@@ -219,7 +251,8 @@ parts:
     plugin: dump
     source: https://github.com/kubiko/optee-uc-fde.git
     source-type: git
-    source-branch: add-rsa
+    # TA v2: keys sealed to a measured boot, retired by an RPMB counter
+    source-branch: ta-v2
     organize:
       '*': optee-uc-fde/
     prime:
