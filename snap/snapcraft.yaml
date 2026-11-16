@@ -209,7 +209,7 @@ parts:
       # DEVELOPMENT ONLY: the RPMB key is OP-TEE's public test key. This
       # build needs no RPMB key: with none programmed TA v2 runs without its
       # counter. Programming the test key once, from the U-Boot console (see
-      # docs/optee-rpmb.md), turns the counter on with no rebuild. Anyone
+      # docs/production.md), turns the counter on with no rebuild. Anyone
       # with root can then forge RPMB writes, so the counter is exercised,
       # not secure. Production builds use the key derived from the HUK.
       - CFG_RPMB_TESTKEY: "y"
@@ -229,7 +229,7 @@ parts:
       # the legacy RPMB path, which only tee-supplicant serves, and the kernel
       # waits for it without a timeout, so the first TA call of the boot that
       # reaches RPMB hangs. Programming the key is a provisioning step of its
-      # own, see docs/optee-rpmb.md.
+      # own, see docs/production.md.
       - CFG_RPMB_WRITE_KEY: "n"
       # The FDE TA seals and unseals without the counter when RPMB is not
       # usable from the start of the boot. Production builds set it to y.
