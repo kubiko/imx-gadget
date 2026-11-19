@@ -1,0 +1,8 @@
+#!/bin/sh
+
+# The ELE storage is on the secure-storage partition: if it is mounted,
+# enable the EdgeLock Enclave's services
+if snapctl is-connected secure-storage; then
+  snapctl start --enable "${SNAP_INSTANCE_NAME}.ele-nvm-daemon"
+  snapctl start --enable "${SNAP_INSTANCE_NAME}.p11-kit-server-ele-0"
+fi

@@ -78,6 +78,34 @@ apps:
     slots:
       - pkcs11-optee-slot-2
 
+  # The EdgeLock Enclave keeps its key storage as blobs it hands to Linux:
+  # the NVM manager stores and fetches them, as tee-supplicant does for
+  # OP-TEE, and has to run before the SMW Library is loaded. Disabled
+  # until the ele-hsm and secure-storage plugs are connected, see the connect
+  # hooks.
+  ele-nvm-daemon:
+    command: usr/bin/ele-nvm-daemon
+    daemon: simple
+    install-mode: disable
+    plugs:
+      - ele-hsm
+
+  # The ELE pkcs11 provider, the SMW Library's, has one slot, served as
+  # the OP-TEE ones, see p11-kit-server-0.
+  p11-kit-server-ele-0:
+    command: usr/bin/p11-kit-server start --provider ele --slot 0
+    stop-command: usr/bin/p11-kit-server stop --provider ele --slot 0
+    command-chain:
+      - usr/bin/smw-env
+    daemon: simple
+    install-mode: disable
+    after:
+      - ele-nvm-daemon
+    plugs:
+      - ele-hsm
+    slots:
+      - pkcs11-ele-slot-0
+
   generate-hw-id-key:
     command: usr/bin/generate-hw-id-key
     daemon: oneshot
@@ -221,6 +249,78 @@ parts:
     override-build: |
       make -C ${CRAFT_STAGE}/optee-uc-fde O=${CRAFT_PART_BUILD}/out rsa-key-manager
       make -C ${CRAFT_STAGE}/optee-uc-fde O=${CRAFT_PART_BUILD}/out rsa-key-manager install
+
+  # EdgeLock Enclave (ELE) HSM library and the NVM manager daemon
+  imx-secure-enclave:
+    plugin: nil
+    source: https://github.com/nxp-imx/imx-secure-enclave.git
+    source-type: git
+    source-tag: lf-6.18.37-2.1.0
+    source-depth: 1
+    override-build: |
+      for target in "libs tools" install; do
+        make -j$(nproc) \
+             CC="${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc" \
+             PLAT=ele \
+             DESTDIR="${CRAFT_PART_INSTALL}" \
+             BINDIR=/usr/bin \
+             libdir="/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}" \
+             ${target}
+      done
+    prime:
+      - usr/bin/nvm_daemon
+      - usr/lib/*/libele_hsm.so*
+      - usr/lib/*/libele_nvm.so*
+
+  # Security Middleware (SMW) Library on the ELE subsystem, and its pkcs11
+  # provider. YOCTO_BUILD keeps SMW from installing the ELE and SQLite
+  # libraries it links: they come from imx-secure-enclave and the archive.
+  imx-smw:
+    after:
+      - imx-secure-enclave
+    plugin: cmake
+    source: https://github.com/nxp-imx/imx-smw.git
+    source-type: git
+    source-tag: lf-6.18.37-2.1.0
+    source-depth: 1
+    override-pull: |
+      craftctl default
+      patch -p1 < "${CRAFT_PROJECT_DIR}/snap/local/imx-smw-etc-conf-env.patch"
+    cmake-generator: Unix Makefiles
+    cmake-parameters:
+      - -DCMAKE_BUILD_TYPE=Release
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DCMAKE_SYSTEM_NAME=Linux
+      - -DCMAKE_SYSTEM_PROCESSOR=aarch64
+      - -DCMAKE_C_COMPILER=${CRAFT_ARCH_TRIPLET_BUILD_FOR}-gcc
+      - -DCMAKE_LIBRARY_ARCHITECTURE=${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+      # a cross build gets lib from GNUInstallDirs, not the multiarch dir
+      # where imx-secure-enclave and the archive keep the libraries SMW
+      # looks for under it, and where the snap's LD_LIBRARY_PATH points
+      - -DCMAKE_INSTALL_LIBDIR=lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
+      - -DELE_ROOT=${CRAFT_STAGE}
+      - -DSQLite3_ROOT=/
+      - -DYOCTO_BUILD=ON
+    override-build: |
+      craftctl default
+      # smw-env writes the system configuration from this, with the paths
+      # of the snap and the object database on the secure-storage partition
+      install -d "${CRAFT_PART_INSTALL}/etc/smw"
+      sed -e 's|=/usr/share/smw/config/|=@SNAP@/usr/share/smw/config/|' \
+          -e 's|^database=.*|database=@SMW_DB@|' \
+          "${CRAFT_PART_INSTALL}/etc/opt/smw/smw.conf" \
+          > "${CRAFT_PART_INSTALL}/etc/smw/smw.conf.in"
+      grep -q '^smw_config_file=@SNAP@/usr/share/smw/config/ele_config.txt$' \
+           "${CRAFT_PART_INSTALL}/etc/smw/smw.conf.in"
+      grep -q '^database=@SMW_DB@$' "${CRAFT_PART_INSTALL}/etc/smw/smw.conf.in"
+    stage-packages:
+      - libsqlite3-0
+    prime:
+      - etc/smw/smw.conf.in
+      - usr/lib/*/libsmw.so*
+      - usr/lib/*/libsmw_pkcs11.so*
+      - usr/lib/*/libsqlite3.so*
+      - usr/share/smw/config/ele_config.txt
 
   u-boot:
     after:
@@ -520,6 +620,7 @@ build-packages:
   - flex
   - libgnutls28-dev
   - libjson-c-dev:${CRAFT_ARCH_BUILD_FOR}
+  - libsqlite3-dev:${CRAFT_ARCH_BUILD_FOR}
   - libssl-dev
   - libxml2-dev
   - pkgconf
@@ -574,8 +675,21 @@ plugs:
         options: mod_para=nxp/wifi_mod_para.conf
       - name: btnxpuart
         load: denied
+  # the EdgeLock Enclave's HSM interface, of the gadget's own ele-hsm-device
+  # slot: snap connect <gadget>:ele-hsm <gadget>:ele-hsm-device
+  ele-hsm:
+    interface: custom-device
+    custom-device: ele-hsm
 
 slots:
+  ele-hsm-device:
+    interface: custom-device
+    custom-device: ele-hsm
+    devices:
+      - /dev/hsm0_ch0
+  pkcs11-ele-slot-0:
+    interface: pkcs11
+    pkcs11-socket: /run/p11-kit/ele-slot-0
   tee-plugins:
     interface: content
     write:

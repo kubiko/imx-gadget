@@ -1,0 +1,34 @@
+From: Ondrej Kubik <ondrej.kubik@canonical.com>
+Subject: osal: linux: read the system configuration from $SMW_ETC_CONF
+
+The SMW Library reads its system configuration, the ELE storage and the
+object database among it, from /etc/opt/smw/smw.conf only. A snap has
+no /etc of its own: let SMW_ETC_CONF name the file, and keep
+/etc/opt/smw/smw.conf when it is not set.
+
+---
+diff --git a/osal/linux/config.c b/osal/linux/config.c
+index f51d3b0..1cee227 100644
+--- a/osal/linux/config.c
++++ b/osal/linux/config.c
+@@ -997,13 +997,19 @@ int config_read_system_cnf(void)
+ 	char *line = NULL;
+ 	size_t length = 0;
+ 	const struct cnf_section *section = NULL;
++	const char *etc_cnf = NULL;
+ 
+ 	struct osal_ctx *ctx = get_osal_ctx();
+ 
+ 	if (!ctx)
+ 		return SMW_STATUS_CONFIGURATION_FAILURE;
+ 
+-	fp = fopen(SMW_ETC_CNF, "r");
++	/* A system without a writable /etc, e.g. a snap, points to its own */
++	etc_cnf = getenv("SMW_ETC_CONF");
++	if (!etc_cnf || !*etc_cnf)
++		etc_cnf = SMW_ETC_CNF;
++
++	fp = fopen(etc_cnf, "r");
+ 	if (!fp) {
+ 		DBG_PRINTF(ERROR, "%s (%d): %s\n", __func__, __LINE__,
+ 			   get_strerr());
