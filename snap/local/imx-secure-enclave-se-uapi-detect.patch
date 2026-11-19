@@ -1,0 +1,163 @@
+From: Ondrej Kubik <ondrej.kubik@canonical.com>
+Subject: ele: detect the uAPI of the kernel's secure-enclave driver
+
+The EdgeLock Enclave driver of a kernel is either NXP's BSP one or the
+secure-enclave series posted upstream (v51), whose uAPI differs in two
+structs: the send and receive command takes both buffers as 64-bit user
+addresses, then both sizes, and the SoC info has no board type. Both
+change the ioctl numbers, so each driver refuses the other's: the NVM
+manager stops after opening its storage, and no command reaches the
+firmware.
+
+Tell the two apart when the first channel is opened, by the SoC info
+ioctl each driver answers, which only reads, and build the send and
+receive command and the SoC info for the driver found. A driver that
+answers neither keeps the BSP's uAPI, as before. The board type, which
+only the SHE paths of the i.MX8DXL read, is 0 with the v51 driver.
+
+---
+diff --git a/src/plat/ele/ele_os_abs_linux.c b/src/plat/ele/ele_os_abs_linux.c
+index 370589e..5bc4f45 100644
+--- a/src/plat/ele/ele_os_abs_linux.c
++++ b/src/plat/ele/ele_os_abs_linux.c
+@@ -31,6 +31,42 @@ char *get_if_name(uint8_t if_id)
+ 	return NULL;
+ }
+ 
++/* The uAPI of the kernel's EdgeLock Enclave driver, see ele_mu_ioctl.h */
++enum se_uapi {
++	SE_UAPI_UNKNOWN = 0,
++	SE_UAPI_BSP,	/* NXP's BSP driver */
++	SE_UAPI_V51,	/* the secure-enclave series posted upstream, v51 */
++};
++
++static enum se_uapi se_uapi = SE_UAPI_UNKNOWN;
++
++/*
++ * plat_os_abs_detect_uapi() tells the two drivers apart, once, by the SoC
++ * info ioctl, whose number differs between them: each driver refuses the
++ * other's without doing anything, and it only reads, where a send and
++ * receive command sent to probe would reach the firmware. A driver that
++ * answers neither keeps the BSP's uAPI, which is what the library spoke
++ * before.
++ */
++static void plat_os_abs_detect_uapi(int fd)
++{
++	struct se_v51_ioctl_get_soc_info v51_info = {0};
++	struct ele_mu_ioctl_get_soc_info bsp_info = {0};
++
++	if (se_uapi != SE_UAPI_UNKNOWN)
++		return;
++
++	if (ioctl(fd, SE_V51_IOCTL_GET_SOC_INFO, &v51_info) == 0) {
++		se_uapi = SE_UAPI_V51;
++		se_info("secure-enclave driver uAPI (v51)\n");
++	} else if (ioctl(fd, ELE_MU_IOCTL_GET_SOC_INFO, &bsp_info) == 0) {
++		se_uapi = SE_UAPI_BSP;
++	} else {
++		se_err("\nunknown secure-enclave driver uAPI, using the BSP's\n");
++		se_uapi = SE_UAPI_BSP;
++	}
++}
++
+ /* Open a session and returns a pointer to the handle or NULL in case of error.
+  * Here it consists in opening the decicated seco MU device file.
+  */
+@@ -69,6 +105,7 @@ struct plat_os_abs_hdl *plat_os_abs_open_mu_channel(uint32_t type, struct plat_m
+ 
+ 		error = ioctl(phdl->fd, ELE_MU_IOCTL_GET_MU_INFO, &info_ioctl);
+ 		if (error == 0) {
++			plat_os_abs_detect_uapi(phdl->fd);
+ 			mu_params->mu_id = info_ioctl.ele_mu_id;
+ 			mu_params->interrupt_idx = info_ioctl.interrupt_idx;
+ 			mu_params->tz = info_ioctl.tz;
+@@ -347,7 +384,7 @@ uint32_t plat_os_abs_get_soc_info(struct plat_os_abs_hdl *phdl,
+ 				  uint16_t *soc_rev,
+ 				  uint8_t *board_type)
+ {
+-	struct ele_mu_ioctl_get_soc_info soc_info;
++	struct ele_mu_ioctl_get_soc_info soc_info = {0};
+ 	int32_t ret = PLAT_SUCCESS;
+ 
+ 	if (!phdl || !soc_id || !soc_rev || !board_type) {
+@@ -355,7 +392,17 @@ uint32_t plat_os_abs_get_soc_info(struct plat_os_abs_hdl *phdl,
+ 		goto out;
+ 	}
+ 
+-	ret = ioctl(phdl->fd, ELE_MU_IOCTL_GET_SOC_INFO, &soc_info);
++	if (se_uapi == SE_UAPI_V51) {
++		/* the v51 driver has no board type */
++		struct se_v51_ioctl_get_soc_info v51_info = {0};
++
++		ret = ioctl(phdl->fd, SE_V51_IOCTL_GET_SOC_INFO, &v51_info);
++		soc_info.soc_id = v51_info.soc_id;
++		soc_info.soc_rev = v51_info.soc_rev;
++		soc_info.board_type = 0;
++	} else {
++		ret = ioctl(phdl->fd, ELE_MU_IOCTL_GET_SOC_INFO, &soc_info);
++	}
+ 	if (ret < 0) {
+ 		ret = PLAT_FAILURE;
+ 		se_err("\nPLAT ioctl error[%d]: %s\n",
+@@ -406,7 +453,21 @@ uint32_t plat_os_abs_cmd_snd_rcv_rsp(struct plat_os_abs_hdl *phdl,
+ 	cmd_snd_rcv_rsp_info.rx_buf = rx_buf;
+ 	cmd_snd_rcv_rsp_info.rx_buf_sz = *rx_buf_sz;
+ 
+-	err = ioctl(phdl->fd, ELE_IOCTL_CMD_SEND_RCV_RSP, &cmd_snd_rcv_rsp_info);
++	if (se_uapi == SE_UAPI_V51) {
++		/* the v51 layout, and so its ioctl number */
++		struct se_v51_ioctl_cmd_snd_rcv_rsp_info v51_info = {
++			.tx_buf = (uint64_t)(uintptr_t)tx_buf,
++			.rx_buf = (uint64_t)(uintptr_t)rx_buf,
++			.tx_buf_sz = (uint32_t)*tx_buf_sz,
++			.rx_buf_sz = (uint32_t)*rx_buf_sz,
++		};
++
++		err = ioctl(phdl->fd, SE_V51_IOCTL_CMD_SEND_RCV_RSP, &v51_info);
++		cmd_snd_rcv_rsp_info.tx_buf_sz = (int)v51_info.tx_buf_sz;
++		cmd_snd_rcv_rsp_info.rx_buf_sz = (int)v51_info.rx_buf_sz;
++	} else {
++		err = ioctl(phdl->fd, ELE_IOCTL_CMD_SEND_RCV_RSP, &cmd_snd_rcv_rsp_info);
++	}
+ 
+ 	if (err < 0 || cmd_snd_rcv_rsp_info.tx_buf_sz < 0 ||
+ 	    cmd_snd_rcv_rsp_info.rx_buf_sz < 0) {
+diff --git a/src/plat/ele/include/ele_mu_ioctl.h b/src/plat/ele/include/ele_mu_ioctl.h
+index 9022d09..5ff06dd 100644
+--- a/src/plat/ele/include/ele_mu_ioctl.h
++++ b/src/plat/ele/include/ele_mu_ioctl.h
+@@ -74,6 +74,34 @@ struct ele_time_frame {
+ 					struct ele_mu_ioctl_get_soc_info)
+ #define ELE_IOCTL_CMD_SEND_RCV_RSP	_IOWR(ELE_MU_IOCTL, 0x07, \
+ 					struct ele_ioctl_cmd_snd_rcv_rsp_info)
++
++/*
++ * The uAPI of the EdgeLock Enclave driver posted upstream (the
++ * secure-enclave series, v51), which differs from the one above, of NXP's
++ * BSP driver, in two structs:
++ *  - the send and receive command takes both buffers as 64-bit user
++ *    addresses, then both sizes, 24 bytes where the BSP's struct has 32;
++ *  - the SoC info has no board type.
++ * Both change the ioctl numbers, so each driver refuses the other's.
++ * plat_os_abs_open_mu_channel() tells the two drivers apart by the SoC
++ * info ioctl each of them answers, see plat_os_abs_detect_uapi().
++ */
++struct se_v51_ioctl_cmd_snd_rcv_rsp_info {
++	uint64_t tx_buf;
++	uint64_t rx_buf;
++	uint32_t tx_buf_sz;
++	uint32_t rx_buf_sz;
++};
++
++struct se_v51_ioctl_get_soc_info {
++	uint16_t soc_id;
++	uint16_t soc_rev;
++};
++
++#define SE_V51_IOCTL_GET_SOC_INFO	_IOR(ELE_MU_IOCTL, 0x06, \
++					struct se_v51_ioctl_get_soc_info)
++#define SE_V51_IOCTL_CMD_SEND_RCV_RSP	_IOWR(ELE_MU_IOCTL, 0x07, \
++					struct se_v51_ioctl_cmd_snd_rcv_rsp_info)
+ #define ELE_MU_IOCTL_GET_TIMER	_IOR(ELE_MU_IOCTL, 0x08, \
+ 				struct ele_time_frame)
+ 
