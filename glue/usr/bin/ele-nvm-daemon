@@ -1,0 +1,21 @@
+#!/bin/sh
+
+# The ELE NVM manager serves the EdgeLock Enclave's requests to keep and
+# fetch the blobs of its key storage, as tee-supplicant does for OP-TEE.
+# Keep them on the tee-storage partition, next to OP-TEE's REE FS: with
+# the SMW object database, they have to survive, or go, together.
+
+storage="${SNAP_COMMON}/tee-storage"
+# mounted: on a file system of its own (mountpoint is not in the sandbox)
+if [ ! -d "${storage}" ] ||
+   [ "$(stat -c %d "${storage}")" = "$(stat -c %d "${SNAP_COMMON}")" ]; then
+  echo "ele-nvm-daemon: ${storage} is not mounted, not keeping ELE storage elsewhere" >&2
+  exit 1
+fi
+
+# nvm_daemon prefixes the blob names with the directory as given
+dir="${storage}/ele/"
+mkdir -p "${dir}"
+
+# 0x80: the NVM session of the HSM interface
+exec "${SNAP}/usr/bin/nvm_daemon" "${dir}ele_nvm_master" "${dir}" 0x80

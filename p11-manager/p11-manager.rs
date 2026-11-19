@@ -14,7 +14,11 @@ const MAX_TRIES: u32 = 5;
 const RETRY_DELAY: Duration = Duration::from_secs(5);
 
 // Libraries of the providers that may be given by name alone
-const KNOWN_PROVIDERS: &[(&str, &str)] = &[("optee", "libckteec.so")];
+const KNOWN_PROVIDERS: &[(&str, &str)] = &[
+    ("optee", "libckteec.so"),
+    // the SMW Library's, on the EdgeLock Enclave
+    ("ele", "libsmw_pkcs11.so.5"),
+];
 
 // Syslog logger helper; falls back to stderr (journal) if /dev/log is unavailable
 fn logger(msg: &str) {
@@ -355,7 +359,7 @@ fn print_help(bin_name: &str) {
          Commands:\n\
          \x20 start              Start p11-kit servers. Requires at least one --provider flag.\n\
          \x20                    Format: --provider \"name:lib.so\", or --provider name of a\n\
-         \x20                    known provider (optee).\n\
+         \x20                    known provider (optee, ele).\n\
          \x20                    Without --slot, start a daemonized server for each slot of\n\
          \x20                    each provider.\n\
          \x20                    With --slot <number>, run the server of that slot of the one\n\

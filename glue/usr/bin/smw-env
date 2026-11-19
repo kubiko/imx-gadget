@@ -1,0 +1,26 @@
+#!/bin/sh
+
+# command-chain of the apps that load the SMW Library, the ELE PKCS#11
+# provider among them. SMW reads its system configuration from
+# /etc/opt/smw/smw.conf, which a snap cannot write; the gadget's SMW is
+# patched to read SMW_ETC_CONF instead. Write that file from the one the
+# build left, with the paths of this revision and the object database on
+# the tee-storage partition, where the ELE storage it refers to is.
+
+storage="${SNAP_COMMON}/tee-storage"
+# mounted: on a file system of its own (mountpoint is not in the sandbox)
+if [ ! -d "${storage}" ] ||
+   [ "$(stat -c %d "${storage}")" = "$(stat -c %d "${SNAP_COMMON}")" ]; then
+  echo "smw-env: ${storage} is not mounted, not keeping the SMW object database elsewhere" >&2
+  exit 1
+fi
+mkdir -p "${storage}/ele" "${SNAP_DATA}/smw"
+
+conf="${SNAP_DATA}/smw/smw.conf"
+sed -e "s|@SNAP@|${SNAP}|g" \
+    -e "s|@SMW_DB@|${storage}/ele/smw_objects_database.dat|g" \
+    "${SNAP}/etc/smw/smw.conf.in" > "${conf}.new" &&
+  mv "${conf}.new" "${conf}"
+
+export SMW_ETC_CONF="${conf}"
+exec "$@"

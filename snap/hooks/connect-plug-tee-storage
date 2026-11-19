@@ -17,3 +17,9 @@ if snapctl is-connected tee; then
           "${SNAP_INSTANCE_NAME}.p11-kit-server-1" \
           "${SNAP_INSTANCE_NAME}.p11-kit-server-2"
 fi
+
+# if the EdgeLock Enclave is connected, enable its services
+if snapctl is-connected ele-hsm; then
+  snapctl start --enable "${SNAP_INSTANCE_NAME}.ele-nvm-daemon"
+  snapctl start --enable "${SNAP_INSTANCE_NAME}.p11-kit-server-ele-0"
+fi
