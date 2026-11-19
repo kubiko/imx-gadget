@@ -274,6 +274,11 @@ parts:
     source-type: git
     source-tag: lf-6.18.37-2.1.0
     source-depth: 1
+    override-pull: |
+      craftctl default
+      # the kernel's ELE driver is NXP's BSP one or the upstream
+      # secure-enclave series (v51), whose uAPI differs: tell them apart
+      patch -p1 < "${CRAFT_PROJECT_DIR}/snap/local/imx-secure-enclave-se-uapi-detect.patch"
     override-build: |
       for target in "libs tools" install; do
         make -j$(nproc) \
