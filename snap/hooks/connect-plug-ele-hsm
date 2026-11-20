@@ -4,5 +4,6 @@
 # enable the EdgeLock Enclave's services
 if snapctl is-connected secure-storage; then
   snapctl start --enable "${SNAP_INSTANCE_NAME}.ele-nvm-daemon"
+  # socket activated: this enables and starts its socket
   snapctl start --enable "${SNAP_INSTANCE_NAME}.p11-kit-server-ele-0"
 fi

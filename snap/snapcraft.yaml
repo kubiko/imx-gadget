@@ -110,8 +110,8 @@ apps:
     plugs:
       - ele-hsm
 
-  # The ELE pkcs11 provider, the SMW Library's, has one slot, served as
-  # the OP-TEE ones, see p11-kit-server-0.
+  # The ELE pkcs11 provider, the SMW Library's, has one slot. Socket
+  # activated as the OP-TEE ones, see p11-kit-server-0.
   p11-kit-server-ele-0:
     command: usr/bin/p11-kit-server start --provider ele --slot 0
     stop-command: usr/bin/p11-kit-server stop --provider ele --slot 0
@@ -123,8 +123,13 @@ apps:
       - ele-nvm-daemon
     plugs:
       - ele-hsm
+      - network-bind
     slots:
       - pkcs11-ele-slot-0
+    sockets:
+      ele-slot-0:
+        listen-stream: /run/p11-kit/ele-slot-0
+        socket-mode: 0600
 
   generate-hw-id-key:
     command: usr/bin/generate-hw-id-key
