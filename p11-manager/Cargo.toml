@@ -3,10 +3,10 @@ name = "p11-manager"
 version = "0.1.0"
 edition = "2021"
 rust-version = "1.95"
-description = "Helper to start P11 kit server instances"
+description = "Helper to start p11-kit server instances, all of them or one per slot"
 
 [[bin]]
-name = "p11-manager"
+name = "p11-kit-server"
 path = "p11-manager.rs"
 
 [dependencies]

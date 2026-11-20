@@ -39,18 +39,43 @@ apps:
       - network-bind
       - tee
 
-  p11-kit-servers:
-    command: usr/bin/p11-manager start --provider optee:libckteec.so
-    stop-command: usr/bin/p11-manager stop
-    daemon: forking
+  # One p11-kit server per OP-TEE pkcs11 slot, on the socket of its pkcs11
+  # slot. Disabled until the tee and tee-storage plugs are connected, see
+  # the connect hooks.
+  p11-kit-server-0:
+    command: usr/bin/p11-kit-server start --provider optee --slot 0
+    stop-command: usr/bin/p11-kit-server stop --provider optee --slot 0
+    daemon: simple
+    install-mode: disable
     after:
       - tee-supplicant
-    install-mode: disable
     plugs:
       - tee
     slots:
       - pkcs11-optee-slot-0
+
+  p11-kit-server-1:
+    command: usr/bin/p11-kit-server start --provider optee --slot 1
+    stop-command: usr/bin/p11-kit-server stop --provider optee --slot 1
+    daemon: simple
+    install-mode: disable
+    after:
+      - tee-supplicant
+    plugs:
+      - tee
+    slots:
       - pkcs11-optee-slot-1
+
+  p11-kit-server-2:
+    command: usr/bin/p11-kit-server start --provider optee --slot 2
+    stop-command: usr/bin/p11-kit-server stop --provider optee --slot 2
+    daemon: simple
+    install-mode: disable
+    after:
+      - tee-supplicant
+    plugs:
+      - tee
+    slots:
       - pkcs11-optee-slot-2
 
   generate-hw-id-key:
@@ -476,7 +501,7 @@ parts:
       # The series prefix comes from the build base, so 24/* and 26/* branches
       # share this line and only differ in base: and the apt suites.
       . /etc/os-release
-      craftctl set version="${VERSION_ID%%.*}-15-6.18.37-2.1.0"
+      craftctl set version="${VERSION_ID%%.*}-16-6.18.37-2.1.0"
 
 build-snaps:
   - rustup
