@@ -5,8 +5,10 @@ snapctl mount \
         --persistent \
         -t ext4 \
         -o rw \
-        "/dev/disk/by-partlabel/tee-storage" \
-        "${SNAP_COMMON}/tee-storage"
+        "/dev/disk/by-partlabel/secure-storage" \
+        "${SNAP_COMMON}/secure-storage"
+
+mkdir -p "${SNAP_COMMON}/secure-storage/tee"
 
 # if tee is connected, enable services
 if snapctl is-connected tee; then

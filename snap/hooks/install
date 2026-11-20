@@ -1,14 +1,17 @@
 #!/bin/sh
 
-# try to setup mount for tee-storage
+# try to setup mount for secure-storage
 # ignore error, once hooks is connected we will try again
 snapctl mount \
         --persistent \
         -t ext4 \
         -o rw \
-        "/dev/disk/by-partlabel/tee-storage" \
-        "${SNAP_COMMON}/tee-storage" \
+        "/dev/disk/by-partlabel/secure-storage" \
+        "${SNAP_COMMON}/secure-storage" \
         || true
+
+# tee storage lives in the tee dir, so we  share it with ELE where available
+mkdir -p "${SNAP_COMMON}/secure-storage/tee"
 
 # Start service to generate device
 # Reenable when interfaces are auto connected

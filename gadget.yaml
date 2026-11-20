@@ -19,13 +19,13 @@ volumes:
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         size: 10M
-      - name: tee-storage
+      - name: secure-storage
         offset: 22020096 # 0xB00000 + partner(0xA00000) = 0x1500000
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4
         size: 50M
       - name: ubuntu-seed
-        offset: 74448896 # 0x1500000 + tee-storage(0x3200000) = 0x4700000
+        offset: 74448896 # 0x1500000 + secure-storage(0x3200000) = 0x4700000
         role: system-seed
         filesystem: ext4
         type: 0FC63DAF-8483-4772-8E79-3D69D8477DE4

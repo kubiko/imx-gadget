@@ -32,7 +32,7 @@ environment:
 
 apps:
   tee-supplicant:
-    command: usr/sbin/tee-supplicant --fs-parent-path $SNAP_COMMON/tee-storage --ta-path $SNAP_COMMON/lib/optee_armtz --plugin-path $SNAP_COMMON/usr/lib/tee-supplicant/plugins
+    command: usr/sbin/tee-supplicant --fs-parent-path $SNAP_COMMON/secure-storage/tee --ta-path $SNAP_COMMON/lib/optee_armtz --plugin-path $SNAP_COMMON/usr/lib/tee-supplicant/plugins
     daemon: simple
     install-mode: disable
     plugs:
@@ -40,7 +40,7 @@ apps:
       - tee
 
   # One p11-kit server per OP-TEE pkcs11 slot, on the socket of its pkcs11
-  # slot. Disabled until the tee and tee-storage plugs are connected, see
+  # slot. Disabled until the tee and secure-storage plugs are connected, see
   # the connect hooks.
   p11-kit-server-0:
     command: usr/bin/p11-kit-server start --provider optee --slot 0
@@ -545,17 +545,17 @@ package-repositories:
 hooks:
   install:
     plugs:
-      - tee-storage
+      - secure-storage
   prepare-device:
     plugs:
       - hardware-observe
 
 plugs:
-  tee-storage:
+  secure-storage:
     interface: mount-control
     mount:
-    - what: /dev/disk/by-partlabel/tee-storage
-      where: $SNAP_COMMON/tee-storage
+    - what: /dev/disk/by-partlabel/secure-storage
+      where: $SNAP_COMMON/secure-storage
       persistent: true
       type:
         - ext4
