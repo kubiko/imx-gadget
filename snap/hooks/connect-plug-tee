@@ -3,6 +3,7 @@
 # if tee is connected, enable services
 if snapctl is-connected secure-storage; then
   snapctl start --enable "${SNAP_INSTANCE_NAME}.tee-supplicant"
+  # socket activated: this enables and starts their sockets
   snapctl start --enable \
           "${SNAP_INSTANCE_NAME}.p11-kit-server-0" \
           "${SNAP_INSTANCE_NAME}.p11-kit-server-1" \

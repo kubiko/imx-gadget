@@ -24,7 +24,7 @@ grade: stable
 
 # Min version to support ubootpart
 assumes:
-  - snapd2.76
+  - snapd2.78
 
 environment:
   LD_LIBRARY_PATH: ${SNAP}/usr/lib/${CRAFT_ARCH_TRIPLET_BUILD_FOR}
@@ -39,9 +39,11 @@ apps:
       - network-bind
       - tee
 
-  # One p11-kit server per OP-TEE pkcs11 slot, on the socket of its pkcs11
-  # slot. Disabled until the tee and secure-storage plugs are connected, see
-  # the connect hooks.
+  # One p11-kit server per OP-TEE pkcs11 slot, socket activated on the
+  # socket of its pkcs11 slot. snapd takes a socket in /run/p11-kit only when
+  # it is the pkcs11-socket of one of the app's pkcs11 slots. Disabled until
+  # the tee and secure-storage plugs are connected, see the connect hooks.
+  # socket-mode 0600 is what p11-kit gives the socket it creates itself.
   p11-kit-server-0:
     command: usr/bin/p11-kit-server start --provider optee --slot 0
     stop-command: usr/bin/p11-kit-server stop --provider optee --slot 0
@@ -50,9 +52,14 @@ apps:
     after:
       - tee-supplicant
     plugs:
+      - network-bind
       - tee
     slots:
       - pkcs11-optee-slot-0
+    sockets:
+      optee-slot-0:
+        listen-stream: /run/p11-kit/optee-slot-0
+        socket-mode: 0600
 
   p11-kit-server-1:
     command: usr/bin/p11-kit-server start --provider optee --slot 1
@@ -62,9 +69,14 @@ apps:
     after:
       - tee-supplicant
     plugs:
+      - network-bind
       - tee
     slots:
       - pkcs11-optee-slot-1
+    sockets:
+      optee-slot-1:
+        listen-stream: /run/p11-kit/optee-slot-1
+        socket-mode: 0600
 
   p11-kit-server-2:
     command: usr/bin/p11-kit-server start --provider optee --slot 2
@@ -74,9 +86,14 @@ apps:
     after:
       - tee-supplicant
     plugs:
+      - network-bind
       - tee
     slots:
       - pkcs11-optee-slot-2
+    sockets:
+      optee-slot-2:
+        listen-stream: /run/p11-kit/optee-slot-2
+        socket-mode: 0600
 
   generate-hw-id-key:
     command: usr/bin/generate-hw-id-key
@@ -501,7 +518,7 @@ parts:
       # The series prefix comes from the build base, so 24/* and 26/* branches
       # share this line and only differ in base: and the apt suites.
       . /etc/os-release
-      craftctl set version="${VERSION_ID%%.*}-16-6.18.37-2.1.0"
+      craftctl set version="${VERSION_ID%%.*}-17-6.18.37-2.1.0"
 
 build-snaps:
   - rustup
