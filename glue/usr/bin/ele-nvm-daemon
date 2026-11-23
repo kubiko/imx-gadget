@@ -18,4 +18,9 @@ dir="${storage}/ele/"
 mkdir -p "${dir}"
 
 # 0x80: the NVM session of the HSM interface
-exec "${SNAP}/usr/bin/nvm_daemon" "${dir}ele_nvm_master" "${dir}" 0x80
+"${SNAP}/usr/bin/nvm_daemon" "${dir}ele_nvm_master" "${dir}" 0x80
+
+# nvm_daemon serves the enclave until it is stopped, and exits 0 even when
+# it cannot open the ELE storage: fail, so that systemd restarts it
+echo "ele-nvm-daemon: nvm_daemon exited" >&2
+exit 1
