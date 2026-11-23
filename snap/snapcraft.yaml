@@ -104,6 +104,9 @@ apps:
     command: usr/bin/ele-nvm-daemon
     daemon: simple
     install-mode: disable
+    # retried until the enclave opens its storage, without hitting the
+    # start limit of systemd
+    restart-delay: 10s
     plugs:
       - ele-hsm
 
